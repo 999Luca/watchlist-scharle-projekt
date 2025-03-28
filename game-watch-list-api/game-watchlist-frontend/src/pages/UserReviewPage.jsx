@@ -3,7 +3,6 @@ import {
   Container,
   Typography,
   Box,
-  Grid,
   Card,
   CardContent,
   IconButton,
@@ -22,6 +21,7 @@ import EditIcon from "@mui/icons-material/Edit";
 import AddIcon from "@mui/icons-material/Add";
 import { useParams } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
+import SimplifiedGameCard from "../components/SimplifiedGameCard";
 
 const ReviewPage = () => {
   const { gameId } = useParams();
@@ -129,152 +129,167 @@ const ReviewPage = () => {
     setOpenDialog(false);
   };
 
+  // Überprüfen, ob der Benutzer bereits einen Kommentar verfasst hat
+  const userHasReview = reviews.some((review) => String(review.user_id) === String(userId));
+
   return (
-    <Container>
-      {game && (
-        <>
-          {/* Game Card */}
-          <Card sx={{ mb: 4 }}>
-            <CardContent>
-              <Typography variant="h4">{game.title}</Typography>
-              <Typography variant="subtitle1">{game.genre}</Typography>
-              <Typography variant="body2">{game.description}</Typography>
-            </CardContent>
-          </Card>
+    <Box
+      sx={{
+        backgroundColor: "#f5f5f5",
+        minHeight: "100vh",
+        py: 4,
+      }}
+    >
+      <Container>
+        {game && <SimplifiedGameCard game={game} />}
 
-          <Box sx={{ textAlign: "center", mb: 4 }}>
-            <Typography variant="h4">{game.title}</Typography>
-            <Typography variant="subtitle1">{game.genre}</Typography>
+        {!userHasReview && (
+          <Box sx={{ mb: 4, textAlign: "right" }}>
+            <Button
+              variant="contained"
+              color="primary"
+              startIcon={<AddIcon />}
+              onClick={() => handleOpenDialog()}
+            >
+              Review hinzufügen
+            </Button>
           </Box>
-        </>
-      )}
+        )}
 
-      <Box sx={{ mb: 4, textAlign: "right" }}>
-        <Button
-          variant="contained"
-          color="primary"
-          startIcon={<AddIcon />}
-          onClick={() => handleOpenDialog()}
-        >
-          Review hinzufügen
-        </Button>
-      </Box>
-
-      <Typography variant="h5" sx={{ mb: 2 }}>
-        Alle Reviews
-      </Typography>
-      <Grid container spacing={2}>
-        {reviews.map((review) => (
-          <Grid item xs={12} sm={6} md={4} key={review.id}>
-            <Card>
+        <Typography variant="h5" sx={{ mb: 2, fontWeight: "bold" }}>
+          Alle Reviews
+        </Typography>
+        <Box sx={{ display: "flex", flexDirection: "column", gap: 3 }}>
+          {reviews.map((review) => (
+            <Card
+              key={review.id}
+              sx={{
+                boxShadow: 3,
+                borderRadius: 2,
+                overflow: "hidden",
+                width: "100%",
+                maxWidth: 600,
+                mx: "auto",
+                height: 220,
+                display: "flex",
+                flexDirection: "column",
+                justifyContent: "space-between",
+              }}
+            >
               <CardContent>
-                <Box sx={{ display: "flex", alignItems: "center", mb: 1 }}>
-                  <Typography variant="h6" sx={{ mr: 1 }}>
-                    Bewertung:
-                  </Typography>
+                <Box sx={{ display: "flex", alignItems: "center", mb: 2 }}>
                   <Rating value={review.rating} readOnly precision={1} />
+                  <Typography variant="body1" sx={{ ml: 2, fontWeight: "bold" }}>
+                    {review.username}
+                  </Typography>
                 </Box>
-                <Typography variant="body2" sx={{ mb: 1 }}>
-                  <strong>Kommentar:</strong> {review.comment}
+                <Typography
+                  variant="h6"
+                  sx={{
+                    mb: 2,
+                    textAlign: "center",
+                    fontWeight: "bold",
+                    fontSize: "1.1rem",
+                  }}
+                >
+                  {review.comment}
                 </Typography>
-                <Typography variant="body2" sx={{ mb: 1 }}>
+                <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
                   <strong>Plattform:</strong> {review.platform}
                 </Typography>
-                <Typography variant="body2" sx={{ mb: 1 }}>
+                <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
                   <strong>Spielzeit:</strong> {review.playtime_hours} Stunden
                 </Typography>
-                <Typography variant="body2" sx={{ mb: 1 }}>
-                  <strong>Benutzer:</strong> {review.username}
+                <Typography variant="body2" color="text.secondary">
+                  <strong>Gepostet am:</strong>{" "}
+                  {new Date(review.posted_at).toLocaleDateString()}
                 </Typography>
-                <Typography variant="body2" sx={{ mb: 1 }}>
-                  <strong>Gepostet am:</strong> {new Date(review.posted_at).toLocaleDateString()}
-                </Typography>
-                {review.user_id === userId && (
-                  <Box sx={{ display: "flex", justifyContent: "flex-end", mt: 2 }}>
-                    <IconButton
-                      color="secondary"
-                      onClick={() => handleOpenDialog(review)}
-                    >
-                      <EditIcon />
-                    </IconButton>
-                    <IconButton
-                      color="error"
-                      onClick={() => handleDeleteReview(review.id)}
-                    >
-                      <DeleteIcon />
-                    </IconButton>
-                  </Box>
-                )}
               </CardContent>
+              {String(review.user_id) === String(userId) && (
+                <Box sx={{ display: "flex", justifyContent: "flex-end", p: 2 }}>
+                  <IconButton
+                    color="secondary"
+                    onClick={() => handleOpenDialog(review)}
+                  >
+                    <EditIcon />
+                  </IconButton>
+                  <IconButton
+                    color="error"
+                    onClick={() => handleDeleteReview(review.id)}
+                  >
+                    <DeleteIcon />
+                  </IconButton>
+                </Box>
+              )}
             </Card>
-          </Grid>
-        ))}
-      </Grid>
+          ))}
+        </Box>
 
-      {/* Dialog für Review hinzufügen/bearbeiten */}
-      <Dialog open={openDialog} onClose={handleCloseDialog}>
-        <DialogTitle>
-          {isEditing ? "Review bearbeiten" : "Review hinzufügen"}
-        </DialogTitle>
-        <DialogContent>
-          <Box sx={{ display: "flex", alignItems: "center", mb: 2 }}>
-            <Typography variant="body1" sx={{ mr: 2 }}>
-              Bewertung:
-            </Typography>
-            <Rating
-              name="rating"
-              value={userReview.rating}
-              onChange={handleRatingChange}
-              precision={1}
+        {/* Dialog für Review hinzufügen/bearbeiten */}
+        <Dialog open={openDialog} onClose={handleCloseDialog}>
+          <DialogTitle sx={{ fontWeight: "bold" }}>
+            {isEditing ? "Review bearbeiten" : "Review hinzufügen"}
+          </DialogTitle>
+          <DialogContent>
+            <Box sx={{ display: "flex", alignItems: "center", mb: 2 }}>
+              <Typography variant="body1" sx={{ mr: 2 }}>
+                Bewertung:
+              </Typography>
+              <Rating
+                name="rating"
+                value={userReview.rating}
+                onChange={handleRatingChange}
+                precision={1}
+              />
+            </Box>
+            <TextField
+              label="Kommentar"
+              name="comment"
+              value={userReview.comment}
+              onChange={handleInputChange}
+              fullWidth
+              multiline
+              rows={4}
+              sx={{ mb: 2 }}
             />
-          </Box>
-          <TextField
-            label="Kommentar"
-            name="comment"
-            value={userReview.comment}
-            onChange={handleInputChange}
-            fullWidth
-            multiline
-            rows={4}
-            sx={{ mb: 2 }}
-          />
-          <TextField
-            label="Spielzeit (in Stunden)"
-            name="playtime_hours"
-            type="number"
-            value={userReview.playtime_hours}
-            onChange={handleInputChange}
-            fullWidth
-            sx={{ mb: 2 }}
-          />
-          <Select
-            name="platform"
-            value={userReview.platform}
-            onChange={handleInputChange}
-            fullWidth
-            displayEmpty
-            sx={{ mb: 2 }}
-          >
-            <MenuItem value="" disabled>
-              Plattform auswählen
-            </MenuItem>
-            <MenuItem value="PC">PC</MenuItem>
-            <MenuItem value="PlayStation">PlayStation</MenuItem>
-            <MenuItem value="Xbox">Xbox</MenuItem>
-            <MenuItem value="Nintendo">Nintendo</MenuItem>
-            <MenuItem value="Mobile">Mobile</MenuItem>
-          </Select>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={handleCloseDialog} color="secondary">
-            Abbrechen
-          </Button>
-          <Button onClick={handleSubmitReview} color="primary" variant="contained">
-            Speichern
-          </Button>
-        </DialogActions>
-      </Dialog>
-    </Container>
+            <TextField
+              label="Spielzeit (in Stunden)"
+              name="playtime_hours"
+              type="number"
+              value={userReview.playtime_hours}
+              onChange={handleInputChange}
+              fullWidth
+              sx={{ mb: 2 }}
+            />
+            <Select
+              name="platform"
+              value={userReview.platform}
+              onChange={handleInputChange}
+              fullWidth
+              displayEmpty
+              sx={{ mb: 2 }}
+            >
+              <MenuItem value="" disabled>
+                Plattform auswählen
+              </MenuItem>
+              <MenuItem value="PC">PC</MenuItem>
+              <MenuItem value="PlayStation">PlayStation</MenuItem>
+              <MenuItem value="Xbox">Xbox</MenuItem>
+              <MenuItem value="Nintendo">Nintendo</MenuItem>
+              <MenuItem value="Mobile">Mobile</MenuItem>
+            </Select>
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={handleCloseDialog} color="secondary">
+              Abbrechen
+            </Button>
+            <Button onClick={handleSubmitReview} color="primary" variant="contained">
+              Speichern
+            </Button>
+          </DialogActions>
+        </Dialog>
+      </Container>
+    </Box>
   );
 };
 
