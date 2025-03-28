@@ -154,7 +154,7 @@ const GameCard = ({ game, onGameUpdated, onGameDeleted }) => {
           Genre: {game.genre}
         </Typography>
         <Typography variant="body2" color="text.secondary">
-          Platform: {game.platform || "Backendverknüüpfung fehlt hier iwi"}
+          Platform: {game.platform}
         </Typography>
         <Typography variant="body2" color="text.secondary">
           Release: {game.release_date}
