@@ -25,6 +25,7 @@ const GameCard = ({ game, onGameUpdated, onGameDeleted }) => {
   const [formData, setFormData] = useState({
     title: game.title,
     genre: game.genre,
+    platform: game.platform,
     release_date: game.release_date,
     image_url: game.image_url,
     description: game.description || "",
@@ -153,6 +154,9 @@ const GameCard = ({ game, onGameUpdated, onGameDeleted }) => {
           Genre: {game.genre}
         </Typography>
         <Typography variant="body2" color="text.secondary">
+          Platform: {game.platform || "Backendverknüüpfung fehlt hier iwi"}
+        </Typography>
+        <Typography variant="body2" color="text.secondary">
           Release: {game.release_date}
         </Typography>
         <Typography variant="body2" color="text.secondary">
@@ -223,6 +227,15 @@ const GameCard = ({ game, onGameUpdated, onGameDeleted }) => {
             label="Genre"
             name="genre"
             value={formData.genre}
+            onChange={handleInputChange}
+            fullWidth
+            margin="normal"
+            required
+          />
+          <TextField
+            label="Platform"
+            name="platform"
+            value={formData.platform}
             onChange={handleInputChange}
             fullWidth
             margin="normal"
