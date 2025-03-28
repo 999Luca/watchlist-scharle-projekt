@@ -294,7 +294,7 @@ const ReviewPage = () => {
                 </Typography>
                 <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
                   <strong>Gepostet am:</strong>{" "}
-                  {new Date(review.posted_at).toLocaleDateString()}
+                  {new Date(review.created_at).toLocaleDateString()}
                 </Typography>
                 {String(review.user_id).trim() === String(userId).trim() && (
                   <Box sx={{ display: "flex", justifyContent: "flex-end", mt: 2 }}>

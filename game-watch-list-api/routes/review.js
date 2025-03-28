@@ -101,7 +101,7 @@ router.post("/:user_id/review/:game_id", async (req, res) => {
           comment,
           platform,
           playtime_hours,
-          posted_at: new Date().toISOString(),
+          created_at: new Date().toISOString(),
         },
       };
 
@@ -143,7 +143,7 @@ router.get("/:game_id", async (req, res) => {
         return {
           ...review,
           username,
-          posted_at: review.created_at || "Unbekannt",
+          created_at: review.created_at || "Unbekannt",
         };
       })
     );
