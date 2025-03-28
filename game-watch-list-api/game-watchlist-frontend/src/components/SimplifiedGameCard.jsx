@@ -6,8 +6,8 @@ const SimplifiedGameCard = ({ game }) => {
     <Card
       sx={{
         width: "100%",
-        maxWidth: 345,
-        height: "100%",
+        maxWidth: 545,
+        height: "140%",
         display: "flex",
         flexDirection: "column",
         justifyContent: "space-between",
@@ -30,6 +30,9 @@ const SimplifiedGameCard = ({ game }) => {
         <Typography variant="body2" color="text.secondary">
           Release: {game.release_date}
         </Typography>
+        <Typography variant="body2" color="text.secondary">
+  Plattformen: {(game.platforms || []).join(", ") || "Keine Plattformen angegeben"}
+</Typography>
         <Typography variant="body2" color="text.secondary">
           Beschreibung: {game.description || "Keine Beschreibung verfügbar."}
         </Typography>

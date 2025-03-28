@@ -22,6 +22,7 @@ import {
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
 import StarIcon from "@mui/icons-material/Star";
+import FavoriteIcon from "@mui/icons-material/Favorite"; // Neues Icon importieren
 import { useAuth } from "../context/AuthContext";
 
 const GameCard = ({ game, onGameUpdated, onGameDeleted }) => {
@@ -105,6 +106,45 @@ const GameCard = ({ game, onGameUpdated, onGameDeleted }) => {
     }
   };
 
+  const handleAddToWatchlist = async () => {
+    try {
+      const response = await fetch(`http://localhost:5000/watchlist/${userId}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ game_id: game.game_id, status: "will spielen" }),
+      });
+      if (response.ok) {
+        alert("Spiel erfolgreich zur Watchlist hinzugefügt!");
+        setIsInWatchlist(true);
+      } else {
+        const data = await response.json();
+        alert(`Fehler: ${data.error || "Unbekannter Fehler"}`);
+      }
+    } catch (error) {
+      console.error("Fehler beim Hinzufügen zur Watchlist:", error);
+      alert("Ein Fehler ist aufgetreten.");
+    }
+  };
+
+  const handleRemoveFromWatchlist = async () => {
+    try {
+      const response = await fetch(`http://localhost:5000/watchlist/${userId}/${game.game_id}`, {
+        method: "DELETE",
+      });
+  
+      if (response.ok) {
+        alert("Spiel erfolgreich aus der Watchlist entfernt!");
+        window.location.reload(); // Seite neu laden
+      } else {
+        const errorData = await response.json();
+        alert(`Fehler: ${errorData.error || "Unbekannter Fehler"}`);
+      }
+    } catch (error) {
+      console.error("Fehler beim Entfernen des Spiels aus der Watchlist:", error);
+      alert("Ein Fehler ist aufgetreten.");
+    }
+  };
+
   return (
     <Card
       sx={{
@@ -154,13 +194,39 @@ const GameCard = ({ game, onGameUpdated, onGameDeleted }) => {
         </Typography>
       </CardContent>
       <Box sx={{ display: "flex", alignItems: "center", justifyContent: "flex-end", marginTop: 2 }}>
-        <IconButton
-          color="primary"
-          onClick={() => setOpenEditDialog(true)}
-          aria-label="Spiel bearbeiten"
-        >
-          <EditIcon />
-        </IconButton>
+        {isLoggedIn && !isAdmin && (
+          <>
+            {isInWatchlist ? (
+              <Typography
+                variant="body2"
+                color="text.secondary"
+                sx={{ display: "flex", alignItems: "center", marginRight: 2 }}
+              >
+                Spiel bereits in der Watchlist
+                <IconButton color="disabled" aria-label="Bereits in der Watchlist" disabled>
+                  <FavoriteIcon />
+                </IconButton>
+              </Typography>
+            ) : (
+              <IconButton
+                sx={{ color: "#1976d2" }} // Farbe des Icons auf Blau setzen
+                onClick={handleAddToWatchlist}
+                aria-label="Zur Watchlist hinzufügen"
+              >
+                <FavoriteIcon />
+              </IconButton>
+            )}
+          </>
+        )}
+        {isAdmin && (
+          <IconButton
+            color="primary"
+            onClick={() => setOpenEditDialog(true)}
+            aria-label="Spiel bearbeiten"
+          >
+            <EditIcon />
+          </IconButton>
+        )}
         {isAdmin && (
           <IconButton
             color="error"

@@ -42,7 +42,6 @@ router.post("/:user_id/review/:game_id", async (req, res) => {
 
   playtime_hours = parseFloat(playtime_hours);
 
-  // Validierung der Eingaben
   if (!Number.isInteger(rating) || rating < 1 || rating > 5) {
     return res.status(400).json({ error: "Ungültige Bewertung! Die Bewertung muss eine ganze Zahl zwischen 1 und 5 sein." });
   }
@@ -60,7 +59,6 @@ router.post("/:user_id/review/:game_id", async (req, res) => {
   }
 
   try {
-    // Überprüfen, ob der Benutzer bereits eine Bewertung für das Spiel abgegeben hat
     const queryParams = {
       TableName: "Reviews",
       KeyConditionExpression: "user_id = :user_id AND game_id = :game_id",
@@ -80,7 +78,10 @@ router.post("/:user_id/review/:game_id", async (req, res) => {
           user_id,
           game_id,
         },
-        UpdateExpression: "SET rating = :rating, comment = :comment, platform = :platform, playtime_hours = :playtime_hours",
+        UpdateExpression: "SET rating = :rating, #comment = :comment, platform = :platform, playtime_hours = :playtime_hours",
+        ExpressionAttributeNames: {
+          "#comment": "comment", // Alias für das reservierte Schlüsselwort
+        },
         ExpressionAttributeValues: {
           ":rating": rating,
           ":comment": comment,
@@ -91,7 +92,6 @@ router.post("/:user_id/review/:game_id", async (req, res) => {
 
       await docClient.send(new UpdateCommand(updateParams));
     } else {
-      // Neue Bewertung hinzufügen
       const putParams = {
         TableName: "Reviews",
         Item: {
@@ -108,7 +108,6 @@ router.post("/:user_id/review/:game_id", async (req, res) => {
       await docClient.send(new PutCommand(putParams));
     }
 
-    // Spiele-Statistiken aktualisieren
     await updateGameStats(game_id);
 
     res.status(200).json({ message: "Bewertung erfolgreich hinzugefügt oder aktualisiert!" });

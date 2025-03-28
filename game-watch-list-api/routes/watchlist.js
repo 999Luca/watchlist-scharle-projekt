@@ -64,9 +64,13 @@ const validateGame = async (req, res, next) => {
 };
 
 // ✅ Spiel zur Watchlist hinzufügen
-router.post("/:user_id/add/:game_id", validateUser, validateGame, async (req, res) => {
-  const { user_id, game_id } = req.params;
-  const { status } = req.body;
+router.post("/:user_id", validateUser, async (req, res) => {
+  const { user_id } = req.params;
+  const { game_id, status } = req.body;
+
+  if (!game_id) {
+    return res.status(400).json({ error: "Spiel-ID fehlt." });
+  }
 
   if (!status || !["will spielen", "spiele gerade", "fertig gespielt"].includes(status)) {
     return res.status(400).json({ error: "Ungültiger Status! Erlaubte Werte: 'will spielen', 'spiele gerade', 'fertig gespielt'." });
@@ -97,7 +101,6 @@ router.get("/:user_id", validateUser, async (req, res) => {
   const { user_id } = req.params;
 
   try {
-    // Abrufen der Watchlist-Einträge für den Benutzer
     const params = {
       TableName: "Watchlist",
       KeyConditionExpression: "user_id = :user_id",
@@ -108,13 +111,8 @@ router.get("/:user_id", validateUser, async (req, res) => {
 
     const watchlistResult = await docClient.send(new QueryCommand(params));
 
-    if (!watchlistResult.Items || watchlistResult.Items.length === 0) {
-      return res.status(404).json({ error: "Keine Spiele in der Watchlist gefunden!" });
-    }
-
-    // Abrufen der Spieldaten für jedes Spiel in der Watchlist
     const enrichedWatchlist = await Promise.all(
-      watchlistResult.Items.map(async (item) => {
+      (watchlistResult.Items || []).map(async (item) => {
         const gameParams = {
           TableName: "Games",
           KeyConditionExpression: "game_id = :game_id",
@@ -125,13 +123,10 @@ router.get("/:user_id", validateUser, async (req, res) => {
 
         const gameResult = await docClient.send(new QueryCommand(gameParams));
 
-        // Falls das Spiel in der Games-Tabelle nicht gefunden wird, füge nur die Watchlist-Daten hinzu
-        if (!gameResult.Items || gameResult.Items.length === 0) {
-          return { ...item, playtime: item.playtime, game_data: null };
-        }
-
-        // Kombiniere die Watchlist-Daten mit den Spieldaten
-        return { ...item, playtime: item.playtime, game_data: gameResult.Items[0] };
+        return {
+          ...item,
+          game_data: gameResult.Items && gameResult.Items.length > 0 ? gameResult.Items[0] : null,
+        };
       })
     );
 
@@ -142,15 +137,15 @@ router.get("/:user_id", validateUser, async (req, res) => {
 });
 
 // ✅ Spiel aus der Watchlist entfernen
-router.delete("/:user_id/remove/:game_id", validateUser, validateGame, async (req, res) => {
+router.delete("/:user_id/:game_id", validateUser, async (req, res) => {
   const { user_id, game_id } = req.params;
 
   try {
     const params = {
       TableName: "Watchlist",
       Key: {
-        user_id, // Partition key
-        game_id, // Sort key
+        user_id,
+        game_id,
       },
     };
 

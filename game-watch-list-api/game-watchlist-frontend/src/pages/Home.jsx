@@ -92,7 +92,7 @@ const Home = () => {
       alert("Bitte fülle alle Felder aus!");
       return;
     }
-  
+
     try {
       const response = await fetch("http://localhost:5000/games/create", {
         method: "POST",
@@ -102,7 +102,7 @@ const Home = () => {
           platforms: newGame.platforms.map((platform) => platform.trim()), // Plattformen bereinigen
         }),
       });
-  
+
       if (response.ok) {
         const data = await response.json();
         alert("Spiel erfolgreich hinzugefügt!");
@@ -132,7 +132,7 @@ const Home = () => {
     const matchesPlatforms =
       selectedPlatforms.length === 0 ||
       selectedPlatforms.some((platform) => (game.platforms || []).includes(platform)); // Fallback auf leeres Array
-  
+
     return matchesSearchTerm && matchesStars && matchesPlatforms;
   });
 

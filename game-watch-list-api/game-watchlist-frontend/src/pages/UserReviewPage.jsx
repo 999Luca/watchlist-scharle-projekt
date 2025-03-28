@@ -40,25 +40,34 @@ const ReviewPage = () => {
   const fetchGameAndReviews = async () => {
     try {
       console.log("Fetching game and reviews for gameId:", gameId);
+  
       const gameResponse = await fetch(`http://localhost:5000/games/${gameId}`);
       const reviewsResponse = await fetch(`http://localhost:5000/review/${gameId}`);
-
-      if (gameResponse.ok && reviewsResponse.ok) {
+  
+      if (gameResponse.ok) {
         const gameData = await gameResponse.json();
-        const reviewsData = await reviewsResponse.json();
-        console.log("Fetched game data:", gameData);
-        console.log("Fetched reviews data:", reviewsData);
         setGame(gameData);
-        setReviews(reviewsData);
+        console.log("Fetched game data:", gameData);
       } else {
-        console.error("Failed to fetch game or reviews. Status codes:", {
-          gameStatus: gameResponse.status,
-          reviewsStatus: reviewsResponse.status,
-        });
-        alert("Fehler beim Laden der Daten.");
+        console.error("Failed to fetch game. Status code:", gameResponse.status);
+        alert("Fehler beim Laden der Spieldaten.");
+      }
+  
+      if (reviewsResponse.ok) {
+        const reviewsData = await reviewsResponse.json();
+        setReviews(reviewsData);
+        console.log("Fetched reviews data:", reviewsData);
+      } else if (reviewsResponse.status === 404) {
+        // Wenn keine Reviews vorhanden sind, leere Liste setzen
+        console.warn("Keine Reviews gefunden. Status 404.");
+        setReviews([]);
+      } else {
+        console.error("Failed to fetch reviews. Status code:", reviewsResponse.status);
+        alert("Fehler beim Laden der Reviews.");
       }
     } catch (error) {
       console.error("Fehler beim Abrufen der Daten:", error);
+      alert("Ein Fehler ist aufgetreten. Bitte versuche es später erneut.");
     }
   };
 
@@ -194,8 +203,29 @@ const ReviewPage = () => {
       }}
     >
       <Container>
-        {game && <SimplifiedGameCard game={game} />}
-
+        {/* WatchlistGameCard zentrieren und vergrößern */}
+        {game && (
+          <Box
+            sx={{
+              display: "flex",
+              justifyContent: "center",
+              alignItems: "center",
+              mb: 6, // Abstand nach unten
+            }}
+          >
+            <SimplifiedGameCard
+              game={game}
+              sx={{
+                width: "100%",
+                maxWidth: 100, // Vergrößerte Breite
+                boxShadow: 4, // Schatten für mehr Tiefe
+                borderRadius: 3, // Abgerundete Ecken
+              }}
+            />
+          </Box>
+        )}
+  
+        {/* Button für neue Reviews */}
         {!userHasReview && (
           <Box sx={{ mb: 4, textAlign: "right" }}>
             <Button
@@ -208,10 +238,20 @@ const ReviewPage = () => {
             </Button>
           </Box>
         )}
-
-        <Typography variant="h5" sx={{ mb: 2, fontWeight: "bold" }}>
+  
+        {/* Überschrift für Reviews */}
+        <Typography
+          variant="h5"
+          sx={{
+            mb: 4,
+            fontWeight: "bold",
+            textAlign: "center", // Zentrierte Überschrift
+          }}
+        >
           Alle Reviews
         </Typography>
+  
+        {/* Reviews-Liste */}
         <Box sx={{ display: "flex", flexDirection: "column", gap: 3 }}>
           {reviews.map((review) => (
             <Card
@@ -220,8 +260,8 @@ const ReviewPage = () => {
                 boxShadow: 3,
                 borderRadius: 2,
                 overflow: "hidden",
-                width: "100%",
-                maxWidth: 600,
+                width: "120%",
+                maxWidth: 800,
                 mx: "auto",
                 display: "flex",
                 flexDirection: "column",
@@ -265,18 +305,19 @@ const ReviewPage = () => {
                       <EditIcon />
                     </IconButton>
                     <IconButton
-  color="error"
-  onClick={() => handleDeleteReview(review.user_id, review.game_id)}
->
-  <DeleteIcon />
-</IconButton>
+                      color="error"
+                      onClick={() => handleDeleteReview(review.user_id, review.game_id)}
+                    >
+                      <DeleteIcon />
+                    </IconButton>
                   </Box>
                 )}
               </CardContent>
             </Card>
           ))}
         </Box>
-
+  
+        {/* Dialog für Review hinzufügen/bearbeiten */}
         <Dialog open={openDialog} onClose={handleCloseDialog}>
           <DialogTitle sx={{ fontWeight: "bold" }}>
             {isEditing ? "Review bearbeiten" : "Review hinzufügen"}
@@ -342,6 +383,5 @@ const ReviewPage = () => {
       </Container>
     </Box>
   );
-};
-
+}
 export default ReviewPage;

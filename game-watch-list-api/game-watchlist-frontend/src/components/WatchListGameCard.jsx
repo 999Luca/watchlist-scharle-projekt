@@ -4,23 +4,27 @@ import RateReviewIcon from "@mui/icons-material/RateReview";
 import DeleteIcon from "@mui/icons-material/Delete";
 import CheckIcon from "@mui/icons-material/Check";
 import { useAuth } from "../context/AuthContext";
-import { useNavigate } from "react-router-dom"; // Importiere useNavigate
+import { useNavigate } from "react-router-dom";
 
 const WatchlistGameCard = ({ game, onStatusChange, onRemoveFromWatchlist }) => {
   const { userId } = useAuth();
   const [playtime, setPlaytime] = useState(game.playtime || 0);
   const [isSaving, setIsSaving] = useState(false);
-  const navigate = useNavigate(); // Initialisiere useNavigate
+  const navigate = useNavigate();
 
   const handleRemoveFromWatchlist = async (userId, gameId) => {
     try {
-      const response = await fetch(`http://localhost:5000/watchlist/${userId}/remove/${gameId}`, {
+      const response = await fetch(`http://localhost:5000/watchlist/${userId}/${gameId}`, {
         method: "DELETE",
       });
 
       if (response.ok) {
         alert("Spiel erfolgreich aus der Watchlist entfernt!");
-        onRemoveFromWatchlist(gameId);
+        if (onRemoveFromWatchlist) {
+          onRemoveFromWatchlist(gameId);
+        } else {
+          window.location.reload();
+        }
       } else {
         const data = await response.json();
         alert(`Fehler: ${data.error || "Unbekannter Fehler"}`);
@@ -88,6 +92,9 @@ const WatchlistGameCard = ({ game, onStatusChange, onRemoveFromWatchlist }) => {
           <Typography variant="body2" color="text.secondary">
             Release: {game.release_date}
           </Typography>
+          <Typography variant="body2" color="text.secondary">
+  Plattformen: {(Array.isArray(game.platforms) ? game.platforms : (game.platforms || "").split(",")).join(", ") || "Keine Plattformen angegeben"}
+</Typography>
           <Typography variant="body2" color="text.secondary" sx={{ marginBottom: 2 }}>
             Beschreibung: {game.description || "Keine Beschreibung verfügbar."}
           </Typography>
@@ -134,12 +141,11 @@ const WatchlistGameCard = ({ game, onStatusChange, onRemoveFromWatchlist }) => {
             Du hast insgesamt <strong>{playtime} Stunden</strong> gespielt.
           </Typography>
 
-          {/* Button zum Weiterleiten zur Review-Seite */}
           <Button
             variant="contained"
             color="primary"
             startIcon={<RateReviewIcon />}
-            onClick={() => navigate(`/review/${game.game_id}`)} // Weiterleitung zur Review-Seite
+            onClick={() => navigate(`/review/${game.game_id}`)}
             sx={{ width: "100%", marginBottom: 2 }}
           >
             Review hinzufügen
