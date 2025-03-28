@@ -31,7 +31,7 @@ const LoginPage = () => {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(credentials),
       });
-  
+
       const contentType = response.headers.get("Content-Type");
       let data;
       if (contentType && contentType.includes("application/json")) {
@@ -40,17 +40,11 @@ const LoginPage = () => {
         console.error("Server response is not JSON:", await response.text());
         throw new Error("Ungültige Serverantwort.");
       }
-  
+
       if (response.ok) {
         alert(`Login erfolgreich als ${role}`);
-        login(data.user.user_id); // Speichere die Benutzer-ID im Kontext
-        if (role === "admin") {
-          localStorage.setItem("isAdmin", true); // Speichere Admin-Status lokal
-          navigate("/home"); // Weiterleitung für Admin
-        } else {
-          localStorage.setItem("isAdmin", false); // Speichere User-Status lokal
-          navigate("/watchlist"); // Weiterleitung für User
-        }
+        login(data.user.user_id, role === "admin", data.user.username); // Übergibt den Benutzernamen an den AuthContext
+        navigate(role === "admin" ? "/" : "/watchlist"); // Weiterleitung basierend auf der Rolle
       } else {
         alert(`Fehler: ${data.error || data.message}`);
       }
@@ -59,6 +53,7 @@ const LoginPage = () => {
       alert("Ein Fehler ist aufgetreten.");
     }
   };
+
   const togglePasswordVisibility = () => {
     setShowPassword(!showPassword);
   };

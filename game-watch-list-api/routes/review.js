@@ -13,116 +13,52 @@ const client = new DynamoDBClient({
 });
 const docClient = DynamoDBDocumentClient.from(client);
 
+// Hilfsfunktion: Benutzername abrufen
+const getUsername = async (user_id) => {
+  try {
+    const params = {
+      TableName: "Users", // Tabelle, in der die Benutzerdaten gespeichert sind
+      Key: { user_id },
+    };
+
+    const result = await docClient.send(new QueryCommand(params));
+    if (result.Items && result.Items.length > 0) {
+      return result.Items[0].username || `User_${user_id}`;
+    }
+    return `User_${user_id}`; // Fallback, falls kein Benutzername gefunden wird
+  } catch (error) {
+    console.error("Fehler beim Abrufen des Benutzernamens:", error.message);
+    return `User_${user_id}`; // Fallback bei Fehler
+  }
+};
+
 // ✅ Bewertung, Kommentar und Spielzeit hinzufügen oder aktualisieren
 router.post("/:user_id/review/:game_id", async (req, res) => {
-    const { user_id, game_id } = req.params;
-    const { rating, comment, playtime_hours } = req.body;
-  
-    // Validierung der Eingaben
-    if (!Number.isInteger(rating) || rating < 1 || rating > 5) {
-      return res.status(400).json({ error: "Ungültige Bewertung! Die Bewertung muss eine ganze Zahl zwischen 1 und 5 sein." });
-    }
-  
-    if (typeof comment !== "string" || comment.trim() === "") {
-      return res.status(400).json({ error: "Ungültiger Kommentar! Der Kommentar darf nicht leer sein." });
-    }
-  
-    if (!Number.isFinite(playtime_hours) || playtime_hours < 0) {
-      return res.status(400).json({ error: "Ungültige Spielzeit! Die Spielzeit muss eine positive Zahl sein." });
-    }
-  
-    try {
-      // Überprüfen, ob der Status des Spiels in der Watchlist nicht "will spielen" ist
-      const watchlistParams = {
-        TableName: "Watchlist",
-        KeyConditionExpression: "user_id = :user_id AND game_id = :game_id",
-        ExpressionAttributeValues: {
-          ":user_id": user_id,
-          ":game_id": game_id,
-        },
-      };
-      
-      const watchlistResult = await docClient.send(new QueryCommand(watchlistParams));
-      
-      if (!watchlistResult.Items || watchlistResult.Items.length === 0) {
-        return res.status(404).json({ error: "Spiel nicht in der Watchlist gefunden!" });
-      }
-      
-      const watchlistItem = watchlistResult.Items[0];
-      if (watchlistItem.status === "will spielen") {
-        return res.status(400).json({ error: "Bewertungen können nur abgegeben werden, wenn der Status des Spiels nicht 'will spielen' ist." });
-      }
-  
-      // Überprüfen, ob der Benutzer bereits eine Bewertung abgegeben hat
-      const queryParams = {
-        TableName: "Reviews",
-        KeyConditionExpression: "user_id = :user_id AND game_id = :game_id",
-        ExpressionAttributeValues: {
-          ":user_id": user_id,
-          ":game_id": game_id,
-        },
-      };
-  
-      const queryResult = await docClient.send(new QueryCommand(queryParams));
-  
-      let previousRating = null;
-      if (queryResult.Items && queryResult.Items.length > 0) {
-        previousRating = queryResult.Items[0].rating;
-  
-        // Bewertung existiert bereits, aktualisiere sie
-        const updateParams = {
-          TableName: "Reviews",
-          Key: {
-            user_id,
-            game_id,
-          },
-          UpdateExpression: "SET rating = :rating, #comment = :comment, playtime_hours = :playtime_hours",
-          ExpressionAttributeNames: {
-            "#comment": "comment", // Umgehen des reservierten Schlüsselworts
-          },
-          ExpressionAttributeValues: {
-            ":rating": rating,
-            ":comment": comment,
-            ":playtime_hours": playtime_hours,
-          },
-          ReturnValues: "ALL_NEW",
-        };
-  
-        await docClient.send(new UpdateCommand(updateParams));
-      } else {
-        // Füge eine neue Bewertung hinzu
-        const putParams = {
-          TableName: "Reviews",
-          Item: {
-            user_id,
-            game_id,
-            rating,
-            comment,
-            playtime_hours,
-            created_at: new Date().toISOString(),
-          },
-        };
-  
-        await docClient.send(new PutCommand(putParams));
-      }
-  
-      // Aktualisiere die Durchschnittsbewertung und die Anzahl der Bewertungen in der Games-Tabelle
-      await updateGameStats(game_id);
-  
-      res.status(200).json({
-        message: previousRating !== null ? "Bewertung erfolgreich aktualisiert!" : "Bewertung erfolgreich hinzugefügt!",
-      });
-    } catch (error) {
-      res.status(500).json({ error: error.message });
-    }
-  });
-
-// ✅ Bewertung löschen
-router.delete("/:user_id/review/:game_id", async (req, res) => {
   const { user_id, game_id } = req.params;
+  let { rating, comment, platform, playtime_hours } = req.body;
+
+  playtime_hours = parseFloat(playtime_hours);
+
+  if (!Number.isInteger(rating) || rating < 1 || rating > 5) {
+    return res.status(400).json({ error: "Ungültige Bewertung! Die Bewertung muss eine ganze Zahl zwischen 1 und 5 sein." });
+  }
+
+  if (typeof comment !== "string" || comment.trim() === "") {
+    return res.status(400).json({ error: "Ungültiger Kommentar! Der Kommentar darf nicht leer sein." });
+  }
+
+  if (!["PC", "PlayStation", "Xbox", "Nintendo", "Mobile"].includes(platform)) {
+    return res.status(400).json({ error: "Ungültige Plattform! Wähle eine gültige Plattform aus." });
+  }
+
+  if (isNaN(playtime_hours) || playtime_hours < 0) {
+    return res.status(400).json({ error: "Ungültige Spielzeit! Die Spielzeit muss eine positive Zahl sein." });
+  }
 
   try {
-    // Überprüfen, ob die Bewertung existiert
+    const username = await getUsername(user_id); // Benutzername abrufen
+    const createdAt = new Date().toISOString();
+
     const queryParams = {
       TableName: "Reviews",
       KeyConditionExpression: "user_id = :user_id AND game_id = :game_id",
@@ -134,34 +70,92 @@ router.delete("/:user_id/review/:game_id", async (req, res) => {
 
     const queryResult = await docClient.send(new QueryCommand(queryParams));
 
-    if (!queryResult.Items || queryResult.Items.length === 0) {
-      return res.status(404).json({ error: "Bewertung nicht gefunden!" });
+    if (queryResult.Items && queryResult.Items.length > 0) {
+      const updateParams = {
+        TableName: "Reviews",
+        Key: {
+          user_id,
+          game_id,
+        },
+        UpdateExpression: "SET rating = :rating, #comment = :comment, platform = :platform, playtime_hours = :playtime_hours, username = :username, created_at = :created_at",
+        ExpressionAttributeNames: {
+          "#comment": "comment",
+        },
+        ExpressionAttributeValues: {
+          ":rating": rating,
+          ":comment": comment,
+          ":platform": platform,
+          ":playtime_hours": playtime_hours,
+          ":username": username,
+          ":created_at": createdAt,
+        },
+        ReturnValues: "ALL_NEW",
+      };
+
+      await docClient.send(new UpdateCommand(updateParams));
+    } else {
+      const putParams = {
+        TableName: "Reviews",
+        Item: {
+          user_id,
+          game_id,
+          rating,
+          comment,
+          platform,
+          playtime_hours,
+          username,
+          created_at: createdAt,
+        },
+      };
+
+      await docClient.send(new PutCommand(putParams));
     }
 
-    // Lösche die Bewertung
-    const deleteParams = {
+    await updateGameStats(game_id);
+
+    res.status(200).json({ message: "Bewertung erfolgreich hinzugefügt oder aktualisiert!" });
+  } catch (error) {
+    console.error("Fehler beim Hinzufügen der Bewertung:", error.message);
+    res.status(500).json({ error: "Fehler beim Hinzufügen der Bewertung" });
+  }
+});
+
+// ✅ Alle Reviews für ein bestimmtes Spiel abrufen
+router.get("/:game_id", async (req, res) => {
+  const { game_id } = req.params;
+
+  try {
+    const queryParams = {
       TableName: "Reviews",
-      Key: {
-        user_id,
-        game_id,
+      IndexName: "game_id-index",
+      KeyConditionExpression: "game_id = :game_id",
+      ExpressionAttributeValues: {
+        ":game_id": game_id,
       },
     };
 
-    await docClient.send(new DeleteCommand(deleteParams));
+    const queryResult = await docClient.send(new QueryCommand(queryParams));
 
-    // Aktualisiere die Durchschnittsbewertung und die Anzahl der Bewertungen in der Games-Tabelle
-    await updateGameStats(game_id);
+    if (!queryResult.Items || queryResult.Items.length === 0) {
+      return res.status(404).json({ error: "Keine Reviews für dieses Spiel gefunden." });
+    }
 
-    res.status(200).json({ message: "Bewertung erfolgreich gelöscht!" });
+    const reviews = queryResult.Items.map((review) => ({
+      ...review,
+      username: review.username || `User_${review.user_id}`, // Fallback auf User_ID, falls kein Benutzername vorhanden ist
+      posted_at: review.created_at || "Unbekannt",
+    }));
+
+    res.status(200).json(reviews);
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    console.error("Fehler beim Abrufen der Reviews:", error.message);
+    res.status(500).json({ error: "Fehler beim Abrufen der Reviews" });
   }
 });
 
 // ✅ Hilfsfunktion: Aktualisiere die Spiele-Statistiken
 const updateGameStats = async (game_id) => {
   try {
-    // Abrufen aller Bewertungen für das Spiel
     const queryParams = {
       TableName: "Reviews",
       KeyConditionExpression: "game_id = :game_id",
@@ -181,30 +175,10 @@ const updateGameStats = async (game_id) => {
       averageRating = parseFloat((totalRating / reviewsCount).toFixed(1));
     }
 
-    // Abrufen des Spiels aus der Games-Tabelle, um den Sort Key (title) zu erhalten
-    const gameQueryParams = {
-      TableName: "Games",
-      KeyConditionExpression: "game_id = :game_id",
-      ExpressionAttributeValues: {
-        ":game_id": game_id,
-      },
-    };
-
-    const gameQueryResult = await docClient.send(new QueryCommand(gameQueryParams));
-
-    if (!gameQueryResult.Items || gameQueryResult.Items.length === 0) {
-      console.error("Spiel nicht gefunden:", game_id);
-      return;
-    }
-
-    const game = gameQueryResult.Items[0];
-
-    // Aktualisiere die Games-Tabelle
     const updateParams = {
       TableName: "Games",
       Key: {
-        game_id: game.game_id,
-        title: game.title, // Sort Key
+        game_id,
       },
       UpdateExpression: "SET reviews_count = :reviews_count, average_rating = :average_rating",
       ExpressionAttributeValues: {

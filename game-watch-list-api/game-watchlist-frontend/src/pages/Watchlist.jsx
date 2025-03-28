@@ -34,6 +34,7 @@ const Watchlist = () => {
             description: item.game_data?.description || item.description,
             image_url: item.game_data?.image_url || item.image_url,
             status: item.status,
+            playtime: item.playtime || 0, // Spielstunden hinzufügen
           }));
           setWatchlist(transformedData);
         } else {

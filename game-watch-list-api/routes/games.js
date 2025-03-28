@@ -1,5 +1,5 @@
 import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
-import { DynamoDBDocumentClient, PutCommand, QueryCommand, UpdateCommand, ScanCommand } from "@aws-sdk/lib-dynamodb"; // Added ScanCommand
+import { DynamoDBDocumentClient, PutCommand, QueryCommand, UpdateCommand, ScanCommand, DeleteCommand } from "@aws-sdk/lib-dynamodb"; // Added ScanCommand
 import express from "express";
 import dotenv from "dotenv";
 
@@ -16,9 +16,9 @@ const docClient = DynamoDBDocumentClient.from(client);
 
 // ✅ Spiel erstellen
 router.post("/create", async (req, res) => {
-  const { title, genre, release_date, image_url } = req.body;
+  const { title, genre, release_date, image_url, description } = req.body; // Beschreibung hinzufügen
 
-  if (!title || !genre || !release_date || !image_url) {
+  if (!title || !genre || !release_date || !image_url || !description) {
     return res.status(400).json({ error: "Fehlende Angaben!" });
   }
 
@@ -41,7 +41,8 @@ router.post("/create", async (req, res) => {
         title,
         genre,
         release_date,
-        image_url, // Bild-URL speichern
+        image_url,
+        description, // Beschreibung speichern
         created_at: new Date().toISOString(),
         reviews_count: 0,
         average_rating: 0,
@@ -52,6 +53,7 @@ router.post("/create", async (req, res) => {
     await docClient.send(new PutCommand(params));
     res.status(201).json({ message: "Spiel erfolgreich erstellt!", game_id });
   } catch (error) {
+    console.error("Fehler beim Erstellen des Spiels:", error.message);
     res.status(500).json({ error: error.message });
   }
 });
@@ -97,42 +99,90 @@ router.get("/:game_id", async (req, res) => {
 // ✅ Spiel aktualisieren
 router.put("/:game_id", async (req, res) => {
   const { game_id } = req.params;
-  const { title, genre, release_date } = req.body;
+  const { title, genre, release_date, image_url, description } = req.body;
 
-  if (!title && !genre && !release_date) {
-    return res.status(400).json({ error: "Keine Angaben zum Aktualisieren bereitgestellt!" });
+  if (!title || !genre || !release_date || !image_url || !description) {
+    return res.status(400).json({ error: "Alle Felder sind erforderlich!" });
   }
 
   try {
-    const updateExpressions = [];
-    const expressionAttributeValues = {};
-
-    if (title) {
-      updateExpressions.push("title = :title");
-      expressionAttributeValues[":title"] = title;
-    }
-    if (genre) {
-      updateExpressions.push("genre = :genre");
-      expressionAttributeValues[":genre"] = genre;
-    }
-    if (release_date) {
-      updateExpressions.push("release_date = :release_date");
-      expressionAttributeValues[":release_date"] = release_date;
-    }
-
-    const updateParams = {
+    // Abrufen des aktuellen Spiels, um den aktuellen Sortierschlüssel (title) zu erhalten
+    const queryParams = {
       TableName: "Games",
-      Key: {
-        game_id,
+      KeyConditionExpression: "game_id = :game_id",
+      ExpressionAttributeValues: {
+        ":game_id": game_id,
       },
-      UpdateExpression: `SET ${updateExpressions.join(", ")}`,
-      ExpressionAttributeValues: expressionAttributeValues,
-      ReturnValues: "ALL_NEW",
     };
 
-    const updateResult = await docClient.send(new UpdateCommand(updateParams));
-    res.status(200).json({ message: "Spiel erfolgreich aktualisiert!", game: updateResult.Attributes });
+    const queryResult = await docClient.send(new QueryCommand(queryParams));
+
+    if (!queryResult.Items || queryResult.Items.length === 0) {
+      return res.status(404).json({ error: "Spiel nicht gefunden!" });
+    }
+
+    const currentGame = queryResult.Items[0];
+    console.log("Aktuelles Spiel:", currentGame);
+
+    // Wenn der Titel geändert wurde, lösche das alte Element und füge ein neues hinzu
+    if (currentGame.title !== title) {
+      // Löschen des alten Elements
+      const deleteParams = {
+        TableName: "Games",
+        Key: {
+          game_id: game_id,
+          title: currentGame.title, // Alter Titel
+        },
+      };
+
+      console.log("Lösche altes Spiel:", deleteParams);
+      await docClient.send(new DeleteCommand(deleteParams));
+
+      // Hinzufügen des neuen Elements mit dem aktualisierten Titel
+      const putParams = {
+        TableName: "Games",
+        Item: {
+          game_id: game_id,
+          title: title, // Neuer Titel
+          genre: genre,
+          release_date: release_date,
+          image_url: image_url,
+          description: description,
+          created_at: currentGame.created_at, // Behalte das ursprüngliche Erstellungsdatum
+          reviews_count: currentGame.reviews_count,
+          average_rating: currentGame.average_rating,
+        },
+      };
+
+      console.log("Füge neues Spiel hinzu:", putParams);
+      await docClient.send(new PutCommand(putParams));
+    } else {
+      // Wenn der Titel nicht geändert wurde, aktualisiere die anderen Felder
+      const updateParams = {
+        TableName: "Games",
+        Key: {
+          game_id: game_id,
+          title: title, // Titel bleibt gleich
+        },
+        UpdateExpression:
+          "SET genre = :genre, release_date = :release_date, image_url = :image_url, description = :description",
+        ExpressionAttributeValues: {
+          ":genre": genre,
+          ":release_date": release_date,
+          ":image_url": image_url,
+          ":description": description,
+        },
+        ReturnValues: "ALL_NEW",
+      };
+
+      console.log("Aktualisiere Spiel:", updateParams);
+      const updateResult = await docClient.send(new UpdateCommand(updateParams));
+      return res.status(200).json({ message: "Spiel erfolgreich aktualisiert!", game: updateResult.Attributes });
+    }
+
+    res.status(200).json({ message: "Spiel erfolgreich aktualisiert!" });
   } catch (error) {
+    console.error("Fehler beim Aktualisieren des Spiels:", error.message);
     res.status(500).json({ error: error.message });
   }
 });
@@ -142,16 +192,70 @@ router.delete("/:game_id", async (req, res) => {
   const { game_id } = req.params;
 
   try {
-    const deleteParams = {
+    console.log("Lösche Spiel mit game_id:", game_id);
+
+    // Abrufen des Spiels, um den Sortierschlüssel (title) zu erhalten
+    const queryParams = {
       TableName: "Games",
-      Key: {
-        game_id,
+      KeyConditionExpression: "game_id = :game_id",
+      ExpressionAttributeValues: {
+        ":game_id": game_id,
       },
     };
 
+    const queryResult = await docClient.send(new QueryCommand(queryParams));
+
+    if (!queryResult.Items || queryResult.Items.length === 0) {
+      return res.status(404).json({ error: "Spiel nicht gefunden!" });
+    }
+
+    const game = queryResult.Items[0];
+    console.log("Gefundenes Spiel:", game);
+
+    // Löschen des Spiels
+    const deleteParams = {
+      TableName: "Games",
+      Key: {
+        game_id: game_id,
+        title: game.title,
+      },
+    };
+
+    console.log("Lösche Spiel aus der Games-Tabelle:", deleteParams);
     await docClient.send(new DeleteCommand(deleteParams));
-    res.status(200).json({ message: "Spiel erfolgreich gelöscht!" });
+
+    // Löschen aller Einträge in der Watchlist, die mit diesem Spiel verknüpft sind
+    const watchlistQueryParams = {
+      TableName: "Watchlist",
+      IndexName: "GSI_watchlist_game", // Verwende den GSI
+      KeyConditionExpression: "game_id = :game_id",
+      ExpressionAttributeValues: {
+        ":game_id": game_id,
+      },
+    };
+
+    console.log("Abfrage der Watchlist-Einträge mit game_id:", watchlistQueryParams);
+    const watchlistQueryResult = await docClient.send(new QueryCommand(watchlistQueryParams));
+    const watchlistItems = watchlistQueryResult.Items || [];
+
+    console.log("Gefundene Watchlist-Einträge:", watchlistItems);
+
+    for (const item of watchlistItems) {
+      const deleteWatchlistParams = {
+        TableName: "Watchlist",
+        Key: {
+          user_id: item.user_id,
+          game_id: item.game_id,
+        },
+      };
+
+      console.log("Lösche Watchlist-Eintrag:", deleteWatchlistParams);
+      await docClient.send(new DeleteCommand(deleteWatchlistParams));
+    }
+
+    res.status(200).json({ message: "Spiel und alle zugehörigen Watchlist-Einträge erfolgreich gelöscht!" });
   } catch (error) {
+    console.error("Fehler beim Löschen des Spiels:", error.message);
     res.status(500).json({ error: error.message });
   }
 });

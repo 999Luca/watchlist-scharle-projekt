@@ -79,6 +79,7 @@ router.post("/:user_id/add/:game_id", validateUser, validateGame, async (req, re
         user_id, // Partition key
         game_id, // Sort key
         status, // Status des Spiels
+        playtime: 0, // Standardwert für Spielzeit
         added_at: new Date().toISOString(),
       },
       ConditionExpression: "attribute_not_exists(game_id)", // Verhindert doppelte Einträge
@@ -91,7 +92,7 @@ router.post("/:user_id/add/:game_id", validateUser, validateGame, async (req, re
   }
 });
 
-// ✅ Watchlist eines Benutzers anzeigen (mit Spieldaten)
+// ✅ Watchlist eines Benutzers anzeigen (mit Spieldaten und Spielzeit)
 router.get("/:user_id", validateUser, async (req, res) => {
   const { user_id } = req.params;
 
@@ -126,11 +127,11 @@ router.get("/:user_id", validateUser, async (req, res) => {
 
         // Falls das Spiel in der Games-Tabelle nicht gefunden wird, füge nur die Watchlist-Daten hinzu
         if (!gameResult.Items || gameResult.Items.length === 0) {
-          return { ...item, game_data: null };
+          return { ...item, playtime: item.playtime, game_data: null };
         }
 
         // Kombiniere die Watchlist-Daten mit den Spieldaten
-        return { ...item, game_data: gameResult.Items[0] };
+        return { ...item, playtime: item.playtime, game_data: gameResult.Items[0] };
       })
     );
 
@@ -197,5 +198,35 @@ router.put("/:user_id/update-status/:game_id", validateUser, validateGame, async
   }
 });
 
+// ✅ Spielstunden aktualisieren
+router.patch("/:user_id/update/:game_id", async (req, res) => {
+  const { user_id, game_id } = req.params;
+  const { playtime } = req.body;
+
+  if (!playtime || isNaN(playtime)) {
+    return res.status(400).json({ error: "Ungültige Spielstunden!" });
+  }
+
+  try {
+    const params = {
+      TableName: "Watchlist",
+      Key: {
+        user_id,
+        game_id,
+      },
+      UpdateExpression: "SET playtime = :playtime",
+      ExpressionAttributeValues: {
+        ":playtime": Number(playtime),
+      },
+      ReturnValues: "UPDATED_NEW",
+    };
+
+    const result = await docClient.send(new UpdateCommand(params));
+    res.status(200).json({ message: "Spielstunden erfolgreich aktualisiert!", updatedAttributes: result.Attributes });
+  } catch (error) {
+    console.error("Fehler beim Aktualisieren der Spielstunden:", error.message);
+    res.status(500).json({ error: error.message });
+  }
+});
 
 export default router;

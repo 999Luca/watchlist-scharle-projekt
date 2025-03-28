@@ -1,32 +1,61 @@
-import React, { createContext, useState, useContext } from "react";
+import React, { createContext, useContext, useState, useEffect } from "react";
 
 const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [userId, setUserId] = useState(null); // Speichere die Benutzer-ID
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [userId, setUserId] = useState(null);
+  const [username, setUsername] = useState(null);
 
-  const login = (id) => {
-    console.log("Logging in with userId:", id); // Debugging-Log
+  // Beim Login die Daten speichern
+  const login = (userId, isAdmin, username) => {
     setIsLoggedIn(true);
-    setUserId(id); // Setze die Benutzer-ID beim Login
+    setIsAdmin(isAdmin);
+    setUserId(userId);
+    setUsername(username);
+
+    // Speichere die Daten im localStorage
+    localStorage.setItem("isLoggedIn", "true");
+    localStorage.setItem("isAdmin", isAdmin);
+    localStorage.setItem("userId", userId);
+    localStorage.setItem("username", username);
   };
 
+  // Beim Logout die Daten entfernen
   const logout = () => {
-    console.log("Logging out"); // Debugging-Log
     setIsLoggedIn(false);
-    setUserId(null); // Entferne die Benutzer-ID beim Logout
+    setIsAdmin(false);
+    setUserId(null);
+    setUsername(null);
+
+    // Entferne die Daten aus dem localStorage
+    localStorage.removeItem("isLoggedIn");
+    localStorage.removeItem("isAdmin");
+    localStorage.removeItem("userId");
+    localStorage.removeItem("username");
   };
+
+  // Beim Laden der Seite die Daten aus dem localStorage wiederherstellen
+  useEffect(() => {
+    const storedIsLoggedIn = localStorage.getItem("isLoggedIn") === "true";
+    const storedIsAdmin = localStorage.getItem("isAdmin") === "true";
+    const storedUserId = localStorage.getItem("userId");
+    const storedUsername = localStorage.getItem("username");
+
+    if (storedIsLoggedIn) {
+      setIsLoggedIn(true);
+      setIsAdmin(storedIsAdmin);
+      setUserId(storedUserId);
+      setUsername(storedUsername);
+    }
+  }, []);
 
   return (
-    <AuthContext.Provider value={{ isLoggedIn, userId, login, logout }}>
+    <AuthContext.Provider value={{ isLoggedIn, isAdmin, userId, username, login, logout }}>
       {children}
     </AuthContext.Provider>
   );
 };
 
-export const useAuth = () => {
-  const context = useContext(AuthContext);
-  console.log("AuthContext values:", context); // Debugging-Log
-  return context;
-};
+export const useAuth = () => useContext(AuthContext);
