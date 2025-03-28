@@ -120,9 +120,9 @@ router.get("/:user_id", validateUser, async (req, res) => {
             ":game_id": item.game_id,
           },
         };
-
+    
         const gameResult = await docClient.send(new QueryCommand(gameParams));
-
+    
         return {
           ...item,
           game_data: gameResult.Items && gameResult.Items.length > 0 ? gameResult.Items[0] : null,

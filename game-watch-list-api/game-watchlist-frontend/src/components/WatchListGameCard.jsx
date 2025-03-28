@@ -82,23 +82,20 @@ const WatchlistGameCard = ({ game, onStatusChange, onRemoveFromWatchlist }) => {
         sx={{ height: 200 }}
       />
       <CardContent sx={{ flexGrow: 1, display: "flex", flexDirection: "column", justifyContent: "space-between" }}>
-        <Box>
-          <Typography variant="h5" component="div" gutterBottom>
-            {game.title}
-          </Typography>
-          <Typography variant="body2" color="text.secondary">
-            Genre: {game.genre}
-          </Typography>
-          <Typography variant="body2" color="text.secondary">
-            Release: {game.release_date}
-          </Typography>
-          <Typography variant="body2" color="text.secondary">
-  Plattformen: {(Array.isArray(game.platforms) ? game.platforms : (game.platforms || "").split(",")).join(", ") || "Keine Plattformen angegeben"}
-</Typography>
-          <Typography variant="body2" color="text.secondary" sx={{ marginBottom: 2 }}>
-            Beschreibung: {game.description || "Keine Beschreibung verfügbar."}
-          </Typography>
-        </Box>
+      <Box>
+      <Typography variant="h5" component="div" gutterBottom>
+        {game.title}
+      </Typography>
+      <Typography variant="body2" color="text.secondary">
+        Genre: {game.genre}
+      </Typography>
+      <Typography variant="body2" color="text.secondary">
+        Release: {game.release_date}
+      </Typography>
+      <Typography variant="body2" color="text.secondary" sx={{ marginBottom: 2 }}>
+        Beschreibung: {game.description || "Keine Beschreibung verfügbar."}
+      </Typography>
+    </Box>
 
         <Box>
           <Typography variant="body2" color="text.primary" sx={{ marginBottom: 1 }}>
