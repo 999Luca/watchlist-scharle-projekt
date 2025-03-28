@@ -12,8 +12,13 @@ import {
   TextField,
   Button,
   Box,
+  Select,
+  MenuItem,
+  FormControl,
+  InputLabel,
+  Checkbox,
+  ListItemText,
 } from "@mui/material";
-import AddCircleOutlineIcon from "@mui/icons-material/AddCircleOutline";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
 import StarIcon from "@mui/icons-material/Star";
@@ -23,11 +28,11 @@ const GameCard = ({ game, onGameUpdated, onGameDeleted }) => {
   const { isLoggedIn, isAdmin, userId } = useAuth();
   const [openEditDialog, setOpenEditDialog] = useState(false);
   const [formData, setFormData] = useState({
-    title: game.title,
-    genre: game.genre,
-    platform: game.platform,
-    release_date: game.release_date,
-    image_url: game.image_url,
+    title: game.title || "",
+    genre: game.genre || "",
+    platforms: game.platforms || [],
+    release_date: game.release_date || "",
+    image_url: game.image_url || "",
     description: game.description || "",
   });
   const [isInWatchlist, setIsInWatchlist] = useState(false);
@@ -52,38 +57,37 @@ const GameCard = ({ game, onGameUpdated, onGameDeleted }) => {
     checkWatchlist();
   }, [isLoggedIn, userId, game.game_id]);
 
-  const handleAddToWatchlist = async () => {
-    if (!isLoggedIn) {
-      alert("Bitte logge dich ein, um Spiele zur Watchlist hinzuzufügen.");
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setFormData({ ...formData, [name]: value });
+  };
+
+  const handlePlatformChange = (event) => {
+    const { value } = event.target;
+    setFormData({ ...formData, platforms: typeof value === "string" ? value.split(",") : value });
+  };
+
+  const handleEditGame = async () => {
+    if (
+      !formData.title.trim() ||
+      !formData.genre.trim() ||
+      formData.platforms.length === 0 ||
+      !formData.release_date.trim() ||
+      !formData.image_url.trim() ||
+      !formData.description.trim()
+    ) {
+      alert("Bitte fülle alle Felder aus!");
       return;
     }
 
     try {
-      const response = await fetch(`http://localhost:5000/watchlist/${userId}/add/${game.game_id}`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ status: "will spielen" }),
-      });
-
-      if (response.ok) {
-        alert("Spiel erfolgreich zur Watchlist hinzugefügt!");
-        setIsInWatchlist(true);
-      } else {
-        const data = await response.json();
-        alert(`Fehler: ${data.error || "Unbekannter Fehler"}`);
-      }
-    } catch (error) {
-      console.error("Fehler beim Hinzufügen zur Watchlist:", error);
-      alert("Ein Fehler ist aufgetreten.");
-    }
-  };
-
-  const handleEditGame = async () => {
-    try {
       const response = await fetch(`http://localhost:5000/games/${game.game_id}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(formData),
+        body: JSON.stringify({
+          ...formData,
+          platforms: formData.platforms.map((platform) => platform.trim()),
+        }),
       });
 
       if (response.ok) {
@@ -99,34 +103,6 @@ const GameCard = ({ game, onGameUpdated, onGameDeleted }) => {
       console.error("Fehler beim Bearbeiten des Spiels:", error);
       alert("Ein Fehler ist aufgetreten.");
     }
-  };
-
-  const handleDeleteGame = async () => {
-    if (!window.confirm("Möchtest du dieses Spiel wirklich löschen?")) {
-      return;
-    }
-
-    try {
-      const response = await fetch(`http://localhost:5000/games/${game.game_id}`, {
-        method: "DELETE",
-      });
-
-      if (response.ok) {
-        alert("Spiel erfolgreich gelöscht!");
-        onGameDeleted(game.game_id);
-      } else {
-        const data = await response.json();
-        alert(`Fehler: ${data.error || "Unbekannter Fehler"}`);
-      }
-    } catch (error) {
-      console.error("Fehler beim Löschen des Spiels:", error);
-      alert("Ein Fehler ist aufgetreten.");
-    }
-  };
-
-  const handleInputChange = (e) => {
-    const { name, value } = e.target;
-    setFormData({ ...formData, [name]: value });
   };
 
   return (
@@ -154,7 +130,7 @@ const GameCard = ({ game, onGameUpdated, onGameDeleted }) => {
           Genre: {game.genre}
         </Typography>
         <Typography variant="body2" color="text.secondary">
-          Platform: {game.platform}
+          Plattformen: {(game.platforms || []).join(", ")}
         </Typography>
         <Typography variant="body2" color="text.secondary">
           Release: {game.release_date}
@@ -178,36 +154,21 @@ const GameCard = ({ game, onGameUpdated, onGameDeleted }) => {
         </Typography>
       </CardContent>
       <Box sx={{ display: "flex", alignItems: "center", justifyContent: "flex-end", marginTop: 2 }}>
-        {isInWatchlist && (
-          <Typography variant="caption" color="text.secondary" sx={{ marginRight: 1 }}>
-            Bereits in der Watchlist
-          </Typography>
-        )}
         <IconButton
           color="primary"
-          onClick={handleAddToWatchlist}
-          aria-label="Zur Watchlist hinzufügen"
-          disabled={isInWatchlist}
+          onClick={() => setOpenEditDialog(true)}
+          aria-label="Spiel bearbeiten"
         >
-          <AddCircleOutlineIcon />
+          <EditIcon />
         </IconButton>
         {isAdmin && (
-          <>
-            <IconButton
-              color="secondary"
-              onClick={() => setOpenEditDialog(true)}
-              aria-label="Spiel bearbeiten"
-            >
-              <EditIcon />
-            </IconButton>
-            <IconButton
-              color="error"
-              onClick={handleDeleteGame}
-              aria-label="Spiel löschen"
-            >
-              <DeleteIcon />
-            </IconButton>
-          </>
+          <IconButton
+            color="error"
+            onClick={() => onGameDeleted(game.game_id)}
+            aria-label="Spiel löschen"
+          >
+            <DeleteIcon />
+          </IconButton>
         )}
       </Box>
 
@@ -232,15 +193,33 @@ const GameCard = ({ game, onGameUpdated, onGameDeleted }) => {
             margin="normal"
             required
           />
-          <TextField
-            label="Platform"
-            name="platform"
-            value={formData.platform}
-            onChange={handleInputChange}
-            fullWidth
-            margin="normal"
-            required
-          />
+          <FormControl fullWidth margin="normal">
+            <InputLabel>Plattformen</InputLabel>
+            <Select
+              multiple
+              name="platforms"
+              value={formData.platforms}
+              onChange={handlePlatformChange}
+              renderValue={(selected) => selected.join(", ")}
+            >
+              <MenuItem value="PC">
+                <Checkbox checked={formData.platforms.includes("PC")} />
+                <ListItemText primary="PC" />
+              </MenuItem>
+              <MenuItem value="PlayStation">
+                <Checkbox checked={formData.platforms.includes("PlayStation")} />
+                <ListItemText primary="PlayStation" />
+              </MenuItem>
+              <MenuItem value="Xbox">
+                <Checkbox checked={formData.platforms.includes("Xbox")} />
+                <ListItemText primary="Xbox" />
+              </MenuItem>
+              <MenuItem value="Nintendo Switch">
+                <Checkbox checked={formData.platforms.includes("Nintendo Switch")} />
+                <ListItemText primary="Nintendo Switch" />
+              </MenuItem>
+            </Select>
+          </FormControl>
           <TextField
             label="Release-Datum"
             name="release_date"
