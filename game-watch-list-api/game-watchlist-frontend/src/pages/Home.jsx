@@ -55,7 +55,7 @@ const Home = () => {
   const filteredGames = games.filter((game) => {
     return (
       game.title.toLowerCase().includes(searchTerm.toLowerCase()) &&
-      (selectedStars ? game.stars === parseInt(selectedStars) : true) &&
+      (selectedStars ? Math.round(game.average_rating || 0) === parseInt(selectedStars) : true) &&
       (selectedPlatform ? game.platform === selectedPlatform : true)
     );
   });
