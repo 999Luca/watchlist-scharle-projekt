@@ -124,7 +124,7 @@ router.get("/:game_id", async (req, res) => {
   try {
     const queryParams = {
       TableName: "Reviews",
-      IndexName: "game_id-index",
+      IndexName: "game_id-index", // Stelle sicher, dass der Index existiert
       KeyConditionExpression: "game_id = :game_id",
       ExpressionAttributeValues: {
         ":game_id": game_id,
