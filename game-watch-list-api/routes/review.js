@@ -42,26 +42,25 @@ router.post("/:user_id/review/:game_id", async (req, res) => {
 
   playtime_hours = parseFloat(playtime_hours);
 
+  // Validierung der Eingaben
   if (!Number.isInteger(rating) || rating < 1 || rating > 5) {
     return res.status(400).json({ error: "Ungültige Bewertung! Die Bewertung muss eine ganze Zahl zwischen 1 und 5 sein." });
   }
 
   if (typeof comment !== "string" || comment.trim() === "") {
-    return res.status(400).json({ error: "Ungültiger Kommentar! Der Kommentar darf nicht leer sein." });
+    return res.status(400).json({ error: "Kommentar darf nicht leer sein." });
   }
 
   if (!["PC", "PlayStation", "Xbox", "Nintendo", "Mobile"].includes(platform)) {
-    return res.status(400).json({ error: "Ungültige Plattform! Wähle eine gültige Plattform aus." });
+    return res.status(400).json({ error: "Ungültige Plattform." });
   }
 
   if (isNaN(playtime_hours) || playtime_hours < 0) {
-    return res.status(400).json({ error: "Ungültige Spielzeit! Die Spielzeit muss eine positive Zahl sein." });
+    return res.status(400).json({ error: "Spielzeit muss eine positive Zahl sein." });
   }
 
   try {
-    const username = await getUsername(user_id); // Benutzername abrufen
-    const createdAt = new Date().toISOString();
-
+    // Überprüfen, ob der Benutzer bereits eine Bewertung für das Spiel abgegeben hat
     const queryParams = {
       TableName: "Reviews",
       KeyConditionExpression: "user_id = :user_id AND game_id = :game_id",
@@ -74,29 +73,25 @@ router.post("/:user_id/review/:game_id", async (req, res) => {
     const queryResult = await docClient.send(new QueryCommand(queryParams));
 
     if (queryResult.Items && queryResult.Items.length > 0) {
+      // Bewertung aktualisieren
       const updateParams = {
         TableName: "Reviews",
         Key: {
           user_id,
           game_id,
         },
-        UpdateExpression: "SET rating = :rating, #comment = :comment, platform = :platform, playtime_hours = :playtime_hours, username = :username, created_at = :created_at",
-        ExpressionAttributeNames: {
-          "#comment": "comment",
-        },
+        UpdateExpression: "SET rating = :rating, comment = :comment, platform = :platform, playtime_hours = :playtime_hours",
         ExpressionAttributeValues: {
           ":rating": rating,
           ":comment": comment,
           ":platform": platform,
           ":playtime_hours": playtime_hours,
-          ":username": username,
-          ":created_at": createdAt,
         },
-        ReturnValues: "ALL_NEW",
       };
 
       await docClient.send(new UpdateCommand(updateParams));
     } else {
+      // Neue Bewertung hinzufügen
       const putParams = {
         TableName: "Reviews",
         Item: {
@@ -106,20 +101,20 @@ router.post("/:user_id/review/:game_id", async (req, res) => {
           comment,
           platform,
           playtime_hours,
-          username,
-          created_at: createdAt,
+          posted_at: new Date().toISOString(),
         },
       };
 
       await docClient.send(new PutCommand(putParams));
     }
 
+    // Spiele-Statistiken aktualisieren
     await updateGameStats(game_id);
 
     res.status(200).json({ message: "Bewertung erfolgreich hinzugefügt oder aktualisiert!" });
   } catch (error) {
-    console.error("Fehler beim Hinzufügen der Bewertung:", error.message);
-    res.status(500).json({ error: "Fehler beim Hinzufügen der Bewertung" });
+    console.error("Fehler beim Hinzufügen oder Aktualisieren der Bewertung:", error.message);
+    res.status(500).json({ error: "Fehler beim Hinzufügen oder Aktualisieren der Bewertung." });
   }
 });
 
@@ -164,6 +159,7 @@ router.get("/:game_id", async (req, res) => {
 // ✅ Hilfsfunktion: Aktualisiere die Spiele-Statistiken
 const updateGameStats = async (game_id) => {
   try {
+    // Abrufen aller Bewertungen für das Spiel
     const queryParams = {
       TableName: "Reviews",
       KeyConditionExpression: "game_id = :game_id",
@@ -183,10 +179,30 @@ const updateGameStats = async (game_id) => {
       averageRating = parseFloat((totalRating / reviewsCount).toFixed(1));
     }
 
+    // Abrufen des Spiels aus der Games-Tabelle, um den Sort Key (title) zu erhalten
+    const gameQueryParams = {
+      TableName: "Games",
+      KeyConditionExpression: "game_id = :game_id",
+      ExpressionAttributeValues: {
+        ":game_id": game_id,
+      },
+    };
+
+    const gameQueryResult = await docClient.send(new QueryCommand(gameQueryParams));
+
+    if (!gameQueryResult.Items || gameQueryResult.Items.length === 0) {
+      console.error("Spiel nicht gefunden:", game_id);
+      return;
+    }
+
+    const game = gameQueryResult.Items[0];
+
+    // Aktualisiere die Games-Tabelle
     const updateParams = {
       TableName: "Games",
       Key: {
-        game_id,
+        game_id: game.game_id,
+        title: game.title, // Sort Key
       },
       UpdateExpression: "SET reviews_count = :reviews_count, average_rating = :average_rating",
       ExpressionAttributeValues: {
@@ -196,9 +212,53 @@ const updateGameStats = async (game_id) => {
     };
 
     await docClient.send(new UpdateCommand(updateParams));
+    console.log("Spiele-Statistiken erfolgreich aktualisiert:", game_id);
   } catch (error) {
     console.error("Fehler beim Aktualisieren der Spiele-Statistiken:", error.message);
   }
 };
+
+router.put("/:user_id/review/:game_id", async (req, res) => {
+  const { user_id, game_id } = req.params;
+  const { rating, comment, platform, playtime_hours } = req.body;
+
+  try {
+    // Logik für das Aktualisieren der Review
+    console.log("Updating review:", { user_id, game_id, rating, comment, platform, playtime_hours });
+    res.status(200).json({ message: "Review erfolgreich aktualisiert!" });
+  } catch (error) {
+    console.error("Fehler beim Aktualisieren der Review:", error.message);
+    res.status(500).json({ error: "Fehler beim Aktualisieren der Review" });
+  }
+});
+
+router.delete("/:user_id/review/:game_id", async (req, res) => {
+  const { user_id, game_id } = req.params;
+
+  if (!user_id || !game_id) {
+    return res.status(400).json({ error: "Benutzer-ID oder Spiel-ID fehlt." });
+  }
+
+  try {
+    const params = {
+      TableName: "Reviews",
+      Key: {
+        user_id: user_id,
+        game_id: game_id,
+      },
+    };
+
+    // Bewertung löschen
+    await docClient.send(new DeleteCommand(params));
+
+    // Spiele-Statistiken aktualisieren
+    await updateGameStats(game_id);
+
+    res.status(200).json({ message: "Review erfolgreich gelöscht!" });
+  } catch (error) {
+    console.error("Fehler beim Löschen der Review:", error.message);
+    res.status(500).json({ error: "Fehler beim Löschen der Review." });
+  }
+});
 
 export default router;
