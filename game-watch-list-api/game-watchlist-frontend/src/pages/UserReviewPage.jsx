@@ -37,23 +37,24 @@ const ReviewPage = () => {
   const [isEditing, setIsEditing] = useState(false);
   const [openDialog, setOpenDialog] = useState(false);
 
-  useEffect(() => {
-    const fetchGameAndReviews = async () => {
-      try {
-        const gameResponse = await fetch(`http://localhost:5000/games/${gameId}`);
-        const reviewsResponse = await fetch(`http://localhost:5000/review/${gameId}`);
-    
-        if (gameResponse.ok && reviewsResponse.ok) {
-          setGame(await gameResponse.json());
-          setReviews(await reviewsResponse.json());
-        } else {
-          alert("Fehler beim Laden der Daten.");
-        }
-      } catch (error) {
-        console.error("Fehler:", error);
-      }
-    };
+  const fetchGameAndReviews = async () => {
+    try {
+      const gameResponse = await fetch(`http://localhost:5000/games/${gameId}`);
+      const reviewsResponse = await fetch(`http://localhost:5000/review/${gameId}`);
 
+      if (gameResponse.ok && reviewsResponse.ok) {
+        setGame(await gameResponse.json());
+        const reviewsData = await reviewsResponse.json();
+        setReviews(reviewsData);
+      } else {
+        alert("Fehler beim Laden der Daten.");
+      }
+    } catch (error) {
+      console.error("Fehler:", error);
+    }
+  };
+
+  useEffect(() => {
     fetchGameAndReviews();
   }, [gameId]);
 
@@ -82,15 +83,18 @@ const ReviewPage = () => {
         alert(isEditing ? "Review aktualisiert!" : "Review hinzugefügt!");
         setIsEditing(false);
         setUserReview({ rating: 0, comment: "", platform: "", playtime_hours: 0 });
-        const updatedReviews = await response.json();
-        setReviews(updatedReviews);
         setOpenDialog(false);
+
+        // Seite aktualisieren, indem die Daten erneut abgerufen werden
+        await fetchGameAndReviews();
       } else {
         const errorData = await response.json();
+        console.error("Fehler bei der API:", errorData); // Debugging
         alert(`Fehler: ${errorData.error}`);
       }
     } catch (error) {
-      console.error("Fehler:", error);
+      console.error("Fehler beim Hinzufügen der Review:", error); // Debugging
+      alert("Ein Fehler ist aufgetreten. Bitte versuche es später erneut.");
     }
   };
 
@@ -162,7 +166,7 @@ const ReviewPage = () => {
         <Box sx={{ display: "flex", flexDirection: "column", gap: 3 }}>
           {reviews.map((review) => (
             <Card
-              key={review.id}
+              key={review.id || `${review.user_id}-${review.game_id}`} // Fallback für eindeutige Schlüssel
               sx={{
                 boxShadow: 3,
                 borderRadius: 2,
@@ -180,7 +184,7 @@ const ReviewPage = () => {
                 <Box sx={{ display: "flex", alignItems: "center", mb: 2 }}>
                   <Rating value={review.rating} readOnly precision={1} />
                   <Typography variant="body1" sx={{ ml: 2, fontWeight: "bold" }}>
-                    {review.username}
+                    {review.username || "Unbekannter Benutzer"}
                   </Typography>
                 </Box>
                 <Typography

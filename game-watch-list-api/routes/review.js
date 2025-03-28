@@ -17,18 +17,21 @@ const docClient = DynamoDBDocumentClient.from(client);
 const getUsername = async (user_id) => {
   try {
     const params = {
-      TableName: "Users", // Tabelle, in der die Benutzerdaten gespeichert sind
-      Key: { user_id },
+      TableName: "Users",
+      KeyConditionExpression: "user_id = :user_id",
+      ExpressionAttributeValues: {
+        ":user_id": user_id,
+      },
     };
 
     const result = await docClient.send(new QueryCommand(params));
     if (result.Items && result.Items.length > 0) {
       return result.Items[0].username || `User_${user_id}`;
     }
-    return `User_${user_id}`; // Fallback, falls kein Benutzername gefunden wird
+    return `User_${user_id}`;
   } catch (error) {
     console.error("Fehler beim Abrufen des Benutzernamens:", error.message);
-    return `User_${user_id}`; // Fallback bei Fehler
+    return `User_${user_id}`;
   }
 };
 
@@ -140,11 +143,16 @@ router.get("/:game_id", async (req, res) => {
       return res.status(404).json({ error: "Keine Reviews für dieses Spiel gefunden." });
     }
 
-    const reviews = queryResult.Items.map((review) => ({
-      ...review,
-      username: review.username || `User_${review.user_id}`, // Fallback auf User_ID, falls kein Benutzername vorhanden ist
-      posted_at: review.created_at || "Unbekannt",
-    }));
+    const reviews = await Promise.all(
+      queryResult.Items.map(async (review) => {
+        const username = review.username || (await getUsername(review.user_id));
+        return {
+          ...review,
+          username,
+          posted_at: review.created_at || "Unbekannt",
+        };
+      })
+    );
 
     res.status(200).json(reviews);
   } catch (error) {
