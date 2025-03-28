@@ -39,18 +39,26 @@ const ReviewPage = () => {
 
   const fetchGameAndReviews = async () => {
     try {
+      console.log("Fetching game and reviews for gameId:", gameId);
       const gameResponse = await fetch(`http://localhost:5000/games/${gameId}`);
       const reviewsResponse = await fetch(`http://localhost:5000/review/${gameId}`);
 
       if (gameResponse.ok && reviewsResponse.ok) {
-        setGame(await gameResponse.json());
+        const gameData = await gameResponse.json();
         const reviewsData = await reviewsResponse.json();
+        console.log("Fetched game data:", gameData);
+        console.log("Fetched reviews data:", reviewsData);
+        setGame(gameData);
         setReviews(reviewsData);
       } else {
+        console.error("Failed to fetch game or reviews. Status codes:", {
+          gameStatus: gameResponse.status,
+          reviewsStatus: reviewsResponse.status,
+        });
         alert("Fehler beim Laden der Daten.");
       }
     } catch (error) {
-      console.error("Fehler:", error);
+      console.error("Fehler beim Abrufen der Daten:", error);
     }
   };
 
@@ -59,27 +67,58 @@ const ReviewPage = () => {
   }, [gameId]);
 
   const handleRatingChange = (event, newValue) => {
+    console.log("Rating changed to:", newValue);
     setUserReview({ ...userReview, rating: newValue });
   };
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
+    console.log(`Input changed: ${name} = ${value}`);
     setUserReview({ ...userReview, [name]: value });
   };
 
+  const validateReview = () => {
+    const { rating, comment, platform, playtime_hours } = userReview;
+    console.log("Validating review:", userReview);
+    if (!rating || rating < 1 || rating > 5) {
+      alert("Bitte eine gültige Bewertung zwischen 1 und 5 angeben.");
+      return false;
+    }
+    if (!comment.trim()) {
+      alert("Der Kommentar darf nicht leer sein.");
+      return false;
+    }
+    if (!platform) {
+      alert("Bitte eine Plattform auswählen.");
+      return false;
+    }
+    if (playtime_hours < 0 || isNaN(playtime_hours)) {
+      alert("Die Spielzeit muss eine positive Zahl sein.");
+      return false;
+    }
+    return true;
+  };
+
   const handleSubmitReview = async () => {
+    if (!validateReview()) return;
+
     try {
-      const method = isEditing ? "PUT" : "POST";
-      const response = await fetch(
-        `http://localhost:5000/review/${userId}/review/${gameId}`,
-        {
-          method,
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(userReview),
-        }
-      );
+      const method = isEditing ? "POST" : "POST"; // Ändere PUT zu POST
+      const url = `http://localhost:5000/review/${userId}/review/${gameId}`;
+      console.log("Submitting review to URL:", url);
+
+      const { rating, comment, platform, playtime_hours } = userReview;
+      const reviewData = { rating, comment, platform, playtime_hours };
+      console.log("Review data being sent:", reviewData);
+
+      const response = await fetch(url, {
+        method,
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(reviewData),
+      });
 
       if (response.ok) {
+        console.log("Review submitted successfully.");
         alert(isEditing ? "Review aktualisiert!" : "Review hinzugefügt!");
         setIsEditing(false);
         setUserReview({ rating: 0, comment: "", platform: "", playtime_hours: 0 });
@@ -89,40 +128,50 @@ const ReviewPage = () => {
         await fetchGameAndReviews();
       } else {
         const errorData = await response.json();
-        console.error("Fehler bei der API:", errorData); // Debugging
+        console.error("Fehler bei der API:", errorData);
         alert(`Fehler: ${errorData.error}`);
       }
     } catch (error) {
-      console.error("Fehler beim Hinzufügen der Review:", error); // Debugging
+      console.error("Fehler beim Hinzufügen der Review:", error);
       alert("Ein Fehler ist aufgetreten. Bitte versuche es später erneut.");
     }
   };
 
-  const handleDeleteReview = async (reviewId) => {
+  const handleDeleteReview = async (userId, gameId) => {
+    if (!userId || !gameId) {
+      console.error("User ID or Game ID is undefined. Cannot delete review.");
+      alert("Fehler: Benutzer-ID oder Spiel-ID fehlt.");
+      return;
+    }
+  
     if (!window.confirm("Möchtest du diese Review wirklich löschen?")) return;
-
+  
     try {
-      const response = await fetch(
-        `http://localhost:5000/review/${userId}/review/${reviewId}`,
-        { method: "DELETE" }
-      );
-
+      const url = `http://localhost:5000/review/${userId}/review/${gameId}`;
+      console.log("Deleting review with URL:", url);
+  
+      const response = await fetch(url, { method: "DELETE" });
+  
       if (response.ok) {
+        console.log("Review deleted successfully.");
         alert("Review gelöscht!");
-        setReviews(reviews.filter((review) => review.id !== reviewId));
+        setReviews(reviews.filter((review) => review.user_id !== userId || review.game_id !== gameId));
       } else {
+        console.error("Failed to delete review. Status code:", response.status);
         alert("Fehler beim Löschen der Review.");
       }
     } catch (error) {
-      console.error("Fehler:", error);
+      console.error("Fehler beim Löschen der Review:", error);
     }
   };
 
   const handleOpenDialog = (review = null) => {
     if (review) {
+      console.log("Opening dialog for editing review:", review);
       setUserReview(review);
       setIsEditing(true);
     } else {
+      console.log("Opening dialog for adding a new review.");
       setUserReview({ rating: 0, comment: "", platform: "", playtime_hours: 0 });
       setIsEditing(false);
     }
@@ -130,10 +179,10 @@ const ReviewPage = () => {
   };
 
   const handleCloseDialog = () => {
+    console.log("Closing dialog.");
     setOpenDialog(false);
   };
 
-  // Überprüfen, ob der Benutzer bereits einen Kommentar verfasst hat
   const userHasReview = reviews.some((review) => String(review.user_id) === String(userId));
 
   return (
@@ -166,7 +215,7 @@ const ReviewPage = () => {
         <Box sx={{ display: "flex", flexDirection: "column", gap: 3 }}>
           {reviews.map((review) => (
             <Card
-              key={review.id || `${review.user_id}-${review.game_id}`} // Fallback für eindeutige Schlüssel
+              key={review.id || `${review.user_id}-${review.game_id}`}
               sx={{
                 boxShadow: 3,
                 borderRadius: 2,
@@ -174,7 +223,6 @@ const ReviewPage = () => {
                 width: "100%",
                 maxWidth: 600,
                 mx: "auto",
-                height: 220,
                 display: "flex",
                 flexDirection: "column",
                 justifyContent: "space-between",
@@ -204,32 +252,31 @@ const ReviewPage = () => {
                 <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
                   <strong>Spielzeit:</strong> {review.playtime_hours} Stunden
                 </Typography>
-                <Typography variant="body2" color="text.secondary">
+                <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
                   <strong>Gepostet am:</strong>{" "}
                   {new Date(review.posted_at).toLocaleDateString()}
                 </Typography>
+                {String(review.user_id).trim() === String(userId).trim() && (
+                  <Box sx={{ display: "flex", justifyContent: "flex-end", mt: 2 }}>
+                    <IconButton
+                      color="secondary"
+                      onClick={() => handleOpenDialog(review)}
+                    >
+                      <EditIcon />
+                    </IconButton>
+                    <IconButton
+  color="error"
+  onClick={() => handleDeleteReview(review.user_id, review.game_id)}
+>
+  <DeleteIcon />
+</IconButton>
+                  </Box>
+                )}
               </CardContent>
-              {String(review.user_id) === String(userId) && (
-                <Box sx={{ display: "flex", justifyContent: "flex-end", p: 2 }}>
-                  <IconButton
-                    color="secondary"
-                    onClick={() => handleOpenDialog(review)}
-                  >
-                    <EditIcon />
-                  </IconButton>
-                  <IconButton
-                    color="error"
-                    onClick={() => handleDeleteReview(review.id)}
-                  >
-                    <DeleteIcon />
-                  </IconButton>
-                </Box>
-              )}
             </Card>
           ))}
         </Box>
 
-        {/* Dialog für Review hinzufügen/bearbeiten */}
         <Dialog open={openDialog} onClose={handleCloseDialog}>
           <DialogTitle sx={{ fontWeight: "bold" }}>
             {isEditing ? "Review bearbeiten" : "Review hinzufügen"}
