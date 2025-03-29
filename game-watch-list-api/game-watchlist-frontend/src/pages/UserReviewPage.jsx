@@ -39,41 +39,35 @@ const ReviewPage = () => {
 
   const fetchGameAndReviews = async () => {
     try {
-      console.log("Fetching game and reviews for gameId:", gameId);
-  
       const gameResponse = await fetch(`http://localhost:5000/games/${gameId}`);
+      const watchlistResponse = await fetch(`http://localhost:5000/watchlist/${userId}`);
       const reviewsResponse = await fetch(`http://localhost:5000/review/${gameId}`);
   
       if (gameResponse.ok) {
         const gameData = await gameResponse.json();
+  
+        if (watchlistResponse.ok) {
+          const watchlistData = await watchlistResponse.json();
+          const watchlistItem = watchlistData.watchlist.find(item => item.game_id === gameId);
+          gameData.watchlistStatus = watchlistItem?.status || null; // Status hinzufügen
+        }
+  
         setGame(gameData);
-        console.log("Fetched game data:", gameData);
-      } else {
-        console.error("Failed to fetch game. Status code:", gameResponse.status);
-        alert("Fehler beim Laden der Spieldaten.");
       }
   
       if (reviewsResponse.ok) {
         const reviewsData = await reviewsResponse.json();
         setReviews(reviewsData);
-        console.log("Fetched reviews data:", reviewsData);
-      } else if (reviewsResponse.status === 404) {
-        // Wenn keine Reviews vorhanden sind, leere Liste setzen
-        console.warn("Keine Reviews gefunden. Status 404.");
-        setReviews([]);
-      } else {
-        console.error("Failed to fetch reviews. Status code:", reviewsResponse.status);
-        alert("Fehler beim Laden der Reviews.");
       }
     } catch (error) {
       console.error("Fehler beim Abrufen der Daten:", error);
-      alert("Ein Fehler ist aufgetreten. Bitte versuche es später erneut.");
     }
   };
 
   useEffect(() => {
     fetchGameAndReviews();
-  }, [gameId]);
+    console.log("Game data:", game); 
+  }, [gameId, game]);
 
   const handleRatingChange = (event, newValue) => {
     console.log("Rating changed to:", newValue);
@@ -225,40 +219,38 @@ const ReviewPage = () => {
         )}
   
         {/* Button für neue Reviews */}
-<Box sx={{ mb: 4, textAlign: "right" }}>
-  {!userId || userHasReview || game?.status === "Will spielen" ? (
-    <Box>
-      <Button
-        variant="contained"
-        color="primary"
-        disabled
-        startIcon={<AddIcon />}
-        sx={{ opacity: 0.5 }}
-      >
-        Review hinzufügen
-      </Button>
-      <Typography
-        variant="body2"
-        color="text.secondary"
-        sx={{ mt: 1, textAlign: "center" }}
-      >
-        {!userId
-          ? "Bitte melde dich an, um eine Review hinzuzufügen."
-          : userHasReview
-          ? "Du hast bereits eine Review zu diesem Spiel abgegeben."
-          : "Du kannst keine Review hinzufügen, solange der Status auf 'Will spielen' steht."}
-      </Typography>
-    </Box>
-  ) : (
-    <Button
-      variant="contained"
-      color="primary"
-      startIcon={<AddIcon />}
-      onClick={() => handleOpenDialog()}
-    >
-      Review hinzufügen
-    </Button>
-  )}
+        {/* Button für neue Reviews */}
+<Box
+  sx={{
+    mb: 4,
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "space-between", // Platz zwischen Text und Button
+    gap: 2,
+  }}
+>
+  <Typography
+    variant="body2"
+    color="text.secondary"
+    sx={{ flexShrink: 0 }} // Verhindert, dass der Text skaliert
+  >
+    {!userId
+      ? "Bitte melde dich an, um eine Review hinzuzufügen."
+      : userHasReview
+      ? "Du hast bereits eine Review hinzugefügt."
+      : game?.watchlistStatus?.trim() === "Will spielen"
+      ? "Das Spiel hat den Status 'Will spielen'. Ändere den Status, um eine Review hinzuzufügen."
+      : ""}
+  </Typography>
+  <Button
+    variant="contained"
+    color="primary"
+    startIcon={<AddIcon />}
+    onClick={() => handleOpenDialog()}
+    disabled={!userId || userHasReview || game?.watchlistStatus === "will spielen"}
+  >
+    Review hinzufügen
+  </Button>
 </Box>
   
         {/* Überschrift für Reviews */}
