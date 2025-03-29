@@ -223,7 +223,7 @@ const GameCard = ({ game, onGameUpdated, onGameDeleted }) => {
               </Typography>
             ) : (
               <IconButton
-                sx={{ color: "#1976d2" }} // Farbe des Icons auf Blau setzen
+                sx={{ color: "#001f3f" }} // Farbe des Icons auf Blau setzen
                 onClick={handleAddToWatchlist}
                 aria-label="Zur Watchlist hinzufügen"
               >

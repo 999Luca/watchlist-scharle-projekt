@@ -26,6 +26,7 @@ const Home = () => {
   const [open, setOpen] = useState(false);
 
   const [searchTerm, setSearchTerm] = useState("");
+  const [searchGenre, setSearchGenre] = useState("");
   const [selectedStars, setSelectedStars] = useState("");
   const [selectedPlatforms, setSelectedPlatforms] = useState([]); // Mehrfachauswahl
 
@@ -128,12 +129,13 @@ const Home = () => {
 
   const filteredGames = games.filter((game) => {
     const matchesSearchTerm = game.title.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesGenre = game.genre.toLowerCase().includes(searchGenre.toLowerCase());
     const matchesStars = selectedStars ? Math.round(game.average_rating || 0) === parseInt(selectedStars) : true;
     const matchesPlatforms =
       selectedPlatforms.length === 0 ||
       selectedPlatforms.some((platform) => (game.platforms || []).includes(platform)); // Fallback auf leeres Array
 
-    return matchesSearchTerm && matchesStars && matchesPlatforms;
+    return matchesSearchTerm && matchesGenre && matchesStars && matchesPlatforms;
   });
 
   return (
@@ -153,6 +155,15 @@ const Home = () => {
             onChange={(e) => setSearchTerm(e.target.value)}
           />
         </Grid>
+        <Grid item xs={12} sm={4}>
+        <TextField
+          label="Nach Genre suchen" // Neues Eingabefeld für Genre
+          variant="outlined"
+          fullWidth
+          value={searchGenre}
+          onChange={(e) => setSearchGenre(e.target.value)}
+        />
+      </Grid>
         <Grid item xs={12} sm={4}>
           <FormControl fullWidth sx={{ minWidth: 200 }}>
             <InputLabel>Anzahl Sterne</InputLabel>

@@ -215,17 +215,17 @@ const AdminReviewPage = () => {
                 <strong>Spielzeit:</strong> {review.playtime_hours} Stunden
               </Typography>
               <Typography
-                variant="body2"
-                color="text.secondary"
-                sx={{ mb: 2 }}
-              >
-                <strong>Gepostet am:</strong>{" "}
-                {new Date(review.posted_at).toLocaleDateString("de-DE", {
-                  year: "numeric",
-                  month: "long",
-                  day: "numeric",
-                })}
-              </Typography>
+              variant="body2"
+              color="text.secondary"
+              sx={{ mb: 2 }}
+            >
+              <strong>Gepostet am:</strong>{" "}
+              {new Date(review.posted_at).toLocaleDateString("de-DE", {
+                year: "numeric",
+                month: "long",
+                day: "numeric",
+              })}
+            </Typography>
               <Box sx={{ display: "flex", justifyContent: "flex-end", mt: 2 }}>
                 <IconButton
                   color="error"
