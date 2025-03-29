@@ -49,7 +49,7 @@ router.post("/register", async (req, res) => {
     const maxUserId = userIds.length > 0 ? Math.max(...userIds) : 0;
     console.log("Max user ID:", maxUserId); // Debugging: Höchste user_id ausgeben
 
-    // Neue user_id berechnen
+    
     const user_id = (maxUserId + 1).toString();
     console.log("New user ID:", user_id); // Debugging: Neue user_id ausgeben
 
