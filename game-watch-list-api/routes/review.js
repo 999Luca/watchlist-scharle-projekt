@@ -101,7 +101,7 @@ router.post("/:user_id/review/:game_id", async (req, res) => {
           comment,
           platform,
           playtime_hours,
-          created_at: new Date().toISOString(),
+          posted_at: new Date().toISOString(),
         },
       };
 

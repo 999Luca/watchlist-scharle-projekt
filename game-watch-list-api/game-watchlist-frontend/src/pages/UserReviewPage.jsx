@@ -225,18 +225,41 @@ const ReviewPage = () => {
         )}
   
         {/* Button für neue Reviews */}
-        {!userHasReview && (
-          <Box sx={{ mb: 4, textAlign: "right" }}>
-            <Button
-              variant="contained"
-              color="primary"
-              startIcon={<AddIcon />}
-              onClick={() => handleOpenDialog()}
-            >
-              Review hinzufügen
-            </Button>
-          </Box>
-        )}
+<Box sx={{ mb: 4, textAlign: "right" }}>
+  {!userId || userHasReview || game?.status === "Will spielen" ? (
+    <Box>
+      <Button
+        variant="contained"
+        color="primary"
+        disabled
+        startIcon={<AddIcon />}
+        sx={{ opacity: 0.5 }}
+      >
+        Review hinzufügen
+      </Button>
+      <Typography
+        variant="body2"
+        color="text.secondary"
+        sx={{ mt: 1, textAlign: "center" }}
+      >
+        {!userId
+          ? "Bitte melde dich an, um eine Review hinzuzufügen."
+          : userHasReview
+          ? "Du hast bereits eine Review zu diesem Spiel abgegeben."
+          : "Du kannst keine Review hinzufügen, solange der Status auf 'Will spielen' steht."}
+      </Typography>
+    </Box>
+  ) : (
+    <Button
+      variant="contained"
+      color="primary"
+      startIcon={<AddIcon />}
+      onClick={() => handleOpenDialog()}
+    >
+      Review hinzufügen
+    </Button>
+  )}
+</Box>
   
         {/* Überschrift für Reviews */}
         <Typography
