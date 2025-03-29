@@ -24,6 +24,7 @@ import DeleteIcon from "@mui/icons-material/Delete";
 import StarIcon from "@mui/icons-material/Star";
 import FavoriteIcon from "@mui/icons-material/Favorite"; // Neues Icon importieren
 import { useAuth } from "../context/AuthContext";
+import { useNavigate } from "react-router-dom";
 
 const GameCard = ({ game, onGameUpdated, onGameDeleted }) => {
   const { isLoggedIn, isAdmin, userId } = useAuth();
@@ -37,6 +38,7 @@ const GameCard = ({ game, onGameUpdated, onGameDeleted }) => {
     description: game.description || "",
   });
   const [isInWatchlist, setIsInWatchlist] = useState(false);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const checkWatchlist = async () => {
@@ -145,6 +147,12 @@ const GameCard = ({ game, onGameUpdated, onGameDeleted }) => {
     }
   };
 
+  const handleNavigateToReviews = () => {
+    if (!isAdmin) {
+      navigate(`/review/${game.game_id}`); // Weiterleitung zur UserReviewPage
+    }
+  };
+
   return (
     <Card
       sx={{
@@ -182,7 +190,13 @@ const GameCard = ({ game, onGameUpdated, onGameDeleted }) => {
         <Typography
           variant="body2"
           color="text.secondary"
-          sx={{ display: "flex", alignItems: "center", marginTop: 2 }}
+          sx={{
+            display: "flex",
+            alignItems: "center",
+            marginTop: 2,
+            cursor: !isAdmin ? "pointer" : "default", // Zeige den Cursor nur für nicht-Admins
+          }}
+          onClick={handleNavigateToReviews} // Klick-Handler
         >
           <StarIcon sx={{ color: "#FFD700", marginRight: 0.5 }} />
           {game.average_rating || "N/A"}

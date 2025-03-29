@@ -292,9 +292,17 @@ const ReviewPage = () => {
                 <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
                   <strong>Spielzeit:</strong> {review.playtime_hours} Stunden
                 </Typography>
-                <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+                <Typography
+                  variant="body2"
+                  color="text.secondary"
+                  sx={{ mb: 2 }}
+                >
                   <strong>Gepostet am:</strong>{" "}
-                  {new Date(review.created_at).toLocaleDateString()}
+                  {new Date(review.posted_at).toLocaleDateString("de-DE", {
+                    year: "numeric",
+                    month: "long",
+                    day: "numeric",
+                  })}
                 </Typography>
                 {String(review.user_id).trim() === String(userId).trim() && (
                   <Box sx={{ display: "flex", justifyContent: "flex-end", mt: 2 }}>

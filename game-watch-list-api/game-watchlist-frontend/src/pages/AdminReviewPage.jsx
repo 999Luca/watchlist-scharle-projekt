@@ -220,7 +220,11 @@ const AdminReviewPage = () => {
                 sx={{ mb: 2 }}
               >
                 <strong>Gepostet am:</strong>{" "}
-                {new Date(review.created_at).toLocaleDateString()}
+                {new Date(review.posted_at).toLocaleDateString("de-DE", {
+                  year: "numeric",
+                  month: "long",
+                  day: "numeric",
+                })}
               </Typography>
               <Box sx={{ display: "flex", justifyContent: "flex-end", mt: 2 }}>
                 <IconButton
