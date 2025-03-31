@@ -73,56 +73,112 @@ const LoginPage = () => {
         Login
       </Typography>
       <ToggleButtonGroup
-        value={role}
-        exclusive
-        onChange={handleRoleChange}
-        sx={{ marginBottom: 2 }}
-      >
-        <ToggleButton value="user">User Login</ToggleButton>
-        <ToggleButton value="admin">Admin Login</ToggleButton>
-      </ToggleButtonGroup>
+  value={role}
+  exclusive
+  onChange={handleRoleChange}
+  sx={{
+    marginBottom: 2,
+    "& .MuiToggleButton-root": {
+      color: "primary.main", // Text in Primary Color
+      borderColor: "primary.main", // Rahmen in Primary Color
+      "&.Mui-selected": {
+        backgroundColor: "primary.main", // Hintergrund in Primary Color, wenn ausgewählt
+        color: "#ffffff", // Weißer Text, wenn ausgewählt
+      },
+      "&:hover": {
+        borderColor: "primary.main",
+        color: "primary.main",
+        backgroundColor: "rgba(0, 31, 63, 0.1)", 
+      },
+    },
+  }}
+>
+  <ToggleButton value="user">User Login</ToggleButton>
+  <ToggleButton value="admin">Admin Login</ToggleButton>
+</ToggleButtonGroup>
       <Box
-        component="form"
-        onSubmit={handleSubmit}
-        sx={{
-          display: 'flex',
-          flexDirection: 'column',
-          gap: 2,
-          width: '100%',
-          maxWidth: 400,
-        }}
-      >
-        <TextField
-          label="E-Mail"
-          name="email"
-          type="email"
-          value={credentials.email}
-          onChange={handleInputChange}
-          required
-        />
-        <TextField
-          label="Passwort"
-          name="password"
-          type={showPassword ? 'text' : 'password'}
-          value={credentials.password}
-          onChange={handleInputChange}
-          required
-          InputProps={{
-            endAdornment: (
-              <InputAdornment position="end">
-                <IconButton onClick={togglePasswordVisibility} edge="end">
-                  {showPassword ? <VisibilityOff /> : <Visibility />}
-                </IconButton>
-              </InputAdornment>
-            ),
-          }}
-        />
-        <Button type="submit" variant="contained" color="primary">
-          Login
-        </Button>
-      </Box>
+  component="form"
+  onSubmit={handleSubmit}
+  sx={{
+    display: "flex",
+    flexDirection: "column",
+    gap: 2,
+    width: "100%",
+    maxWidth: 400,
+  }}
+>
+  <TextField
+    label="E-Mail"
+    name="email"
+    type="email"
+    value={credentials.email}
+    onChange={handleInputChange}
+    required
+    sx={{
+      "& .MuiInputBase-input": {
+        color: "#000000", // Schwarzer Text
+      },
+      "& .MuiInputLabel-root": {
+        color: "#000000", // Schwarzes Label
+      },
+      "& .MuiOutlinedInput-root": {
+        "& fieldset": {
+          borderColor: "#000000", // Schwarzer Rahmen
+        },
+        "&:hover fieldset": {
+          borderColor: "#000000", // Schwarzer Rahmen beim Hover
+        },
+        "&.Mui-focused fieldset": {
+          borderColor: "#000000", // Schwarzer Rahmen bei Fokus
+        },
+      },
+    }}
+  />
+  <TextField
+    label="Passwort"
+    name="password"
+    type={showPassword ? "text" : "password"}
+    value={credentials.password}
+    onChange={handleInputChange}
+    required
+    InputProps={{
+      endAdornment: (
+        <InputAdornment position="end">
+          <IconButton onClick={togglePasswordVisibility} edge="end">
+            {showPassword ? <VisibilityOff /> : <Visibility />}
+          </IconButton>
+        </InputAdornment>
+      ),
+    }}
+    sx={{
+      "& .MuiInputBase-input": {
+        color: "#000000", // Schwarzer Text
+      },
+      "& .MuiInputLabel-root": {
+        color: "#000000", // Schwarzes Label
+      },
+      "& .MuiOutlinedInput-root": {
+        "& fieldset": {
+          borderColor: "#000000", // Schwarzer Rahmen
+        },
+        "&:hover fieldset": {
+          borderColor: "#000000", // Schwarzer Rahmen beim Hover
+        },
+        "&.Mui-focused fieldset": {
+          borderColor: "#000000", // Schwarzer Rahmen bei Fokus
+        },
+      },
+    }}
+  />
+  <Button type="submit" variant="contained" color="primary">
+    Login
+  </Button>
+</Box>
+      <Typography variant="body2" sx={{ marginTop: 2 }} color="text.secondary">
+        Noch kein Konto? <a href="/register">Registrieren</a>
+      </Typography>
     </Box>
   );
-};
+}
 
 export default LoginPage;

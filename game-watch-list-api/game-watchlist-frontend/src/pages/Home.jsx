@@ -146,69 +146,173 @@ const Home = () => {
 
       {/* Filtermenü */}
       <Grid container spacing={2} sx={{ mb: 3 }}>
-        <Grid item xs={12} sm={4}>
-          <TextField
-            label="Nach Name suchen"
-            variant="outlined"
-            fullWidth
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-          />
-        </Grid>
-        <Grid item xs={12} sm={4}>
-        <TextField
-          label="Nach Genre suchen" // Neues Eingabefeld für Genre
-          variant="outlined"
-          fullWidth
-          value={searchGenre}
-          onChange={(e) => setSearchGenre(e.target.value)}
-        />
-      </Grid>
-        <Grid item xs={12} sm={4}>
-          <FormControl fullWidth sx={{ minWidth: 200 }}>
-            <InputLabel>Anzahl Sterne</InputLabel>
-            <Select
-              value={selectedStars}
-              onChange={(e) => setSelectedStars(e.target.value)}
-            >
-              <MenuItem value="">Alle</MenuItem>
-              <MenuItem value={1}>1 Stern</MenuItem>
-              <MenuItem value={2}>2 Sterne</MenuItem>
-              <MenuItem value={3}>3 Sterne</MenuItem>
-              <MenuItem value={4}>4 Sterne</MenuItem>
-              <MenuItem value={5}>5 Sterne</MenuItem>
-            </Select>
-          </FormControl>
-        </Grid>
-        <Grid item xs={12} sm={4}>
-          <FormControl fullWidth sx={{ minWidth: 200 }}>
-            <InputLabel>Plattform</InputLabel>
-            <Select
-              multiple
-              value={selectedPlatforms}
-              onChange={handleFilterPlatformChange}
-              renderValue={(selected) => selected.join(", ")}
-            >
-              <MenuItem value="PC">
-                <Checkbox checked={selectedPlatforms.includes("PC")} />
-                <ListItemText primary="PC" />
-              </MenuItem>
-              <MenuItem value="PlayStation">
-                <Checkbox checked={selectedPlatforms.includes("PlayStation")} />
-                <ListItemText primary="PlayStation" />
-              </MenuItem>
-              <MenuItem value="Xbox">
-                <Checkbox checked={selectedPlatforms.includes("Xbox")} />
-                <ListItemText primary="Xbox" />
-              </MenuItem>
-              <MenuItem value="Nintendo Switch">
-                <Checkbox checked={selectedPlatforms.includes("Nintendo Switch")} />
-                <ListItemText primary="Nintendo Switch" />
-              </MenuItem>
-            </Select>
-          </FormControl>
-        </Grid>
-      </Grid>
+  <Grid item xs={12} sm={4}>
+    <TextField
+      label="Nach Name suchen"
+      variant="outlined"
+      fullWidth
+      value={searchTerm}
+      onChange={(e) => setSearchTerm(e.target.value)}
+      sx={{
+        "& .MuiInputBase-input": {
+          color: "primary.main", // Textfarbe
+        },
+        "& .MuiInputLabel-root": {
+          color: "primary.main", // Label-Farbe
+        },
+        "& .MuiOutlinedInput-root": {
+          "& fieldset": {
+            borderColor: "primary.main", // Rahmenfarbe
+          },
+          "&:hover fieldset": {
+            borderColor: "primary.main", // Rahmenfarbe beim Hover
+          },
+          "&.Mui-focused fieldset": {
+            borderColor: "primary.main", // Rahmenfarbe bei Fokus
+          },
+        },
+      }}
+    />
+  </Grid>
+  <Grid item xs={12} sm={4}>
+    <TextField
+      label="Nach Genre suchen"
+      variant="outlined"
+      fullWidth
+      value={searchGenre}
+      onChange={(e) => setSearchGenre(e.target.value)}
+      sx={{
+        "& .MuiInputBase-input": {
+          color: "primary.main", // Textfarbe
+        },
+        "& .MuiInputLabel-root": {
+          color: "primary.main", // Label-Farbe
+        },
+        "& .MuiOutlinedInput-root": {
+          "& fieldset": {
+            borderColor: "primary.main", // Rahmenfarbe
+          },
+          "&:hover fieldset": {
+            borderColor: "primary.main", // Rahmenfarbe beim Hover
+          },
+          "&.Mui-focused fieldset": {
+            borderColor: "primary.main", // Rahmenfarbe bei Fokus
+          },
+        },
+      }}
+    />
+  </Grid>
+  <Grid item xs={12} sm={4}>
+    <FormControl fullWidth sx={{ minWidth: 200 }}>
+      <InputLabel sx={{ color: "primary.main" }}>Anzahl Sterne</InputLabel>
+      <Select
+        value={selectedStars}
+        onChange={(e) => setSelectedStars(e.target.value)}
+        sx={{
+          "& .MuiSelect-select": {
+            color: "primary.main", // Textfarbe
+          },
+          "& .MuiOutlinedInput-notchedOutline": {
+            borderColor: "primary.main", // Rahmenfarbe
+          },
+          "&:hover .MuiOutlinedInput-notchedOutline": {
+            borderColor: "primary.main", // Rahmenfarbe beim Hover
+          },
+          "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
+            borderColor: "primary.main", // Rahmenfarbe bei Fokus
+          },
+          "& .MuiSvgIcon-root": {
+            color: "primary.main", // Dropdown-Pfeil-Farbe
+          },
+        }}
+      >
+        <MenuItem value="">Alle</MenuItem>
+        <MenuItem value={1}>1 Stern</MenuItem>
+        <MenuItem value={2}>2 Sterne</MenuItem>
+        <MenuItem value={3}>3 Sterne</MenuItem>
+        <MenuItem value={4}>4 Sterne</MenuItem>
+        <MenuItem value={5}>5 Sterne</MenuItem>
+      </Select>
+    </FormControl>
+  </Grid>
+  <Grid item xs={12} sm={4}>
+    <FormControl fullWidth sx={{ minWidth: 200 }}>
+      <InputLabel sx={{ color: "primary.main" }}>Plattform</InputLabel>
+      <Select
+        multiple
+        value={selectedPlatforms}
+        onChange={handleFilterPlatformChange}
+        renderValue={(selected) => selected.join(", ")}
+        sx={{
+          "& .MuiSelect-select": {
+            color: "primary.main", // Textfarbe
+          },
+          "& .MuiOutlinedInput-notchedOutline": {
+            borderColor: "primary.main", // Rahmenfarbe
+          },
+          "&:hover .MuiOutlinedInput-notchedOutline": {
+            borderColor: "primary.main", // Rahmenfarbe beim Hover
+          },
+          "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
+            borderColor: "primary.main", // Rahmenfarbe bei Fokus
+          },
+          "& .MuiSvgIcon-root": {
+            color: "primary.main", // Dropdown-Pfeil-Farbe
+          },
+        }}
+      >
+        <MenuItem value="PC">
+  <Checkbox
+    checked={selectedPlatforms.includes("PC")}
+    sx={{
+      color: "white", // Standardfarbe
+      "&.Mui-checked": {
+        color: "white", // Farbe, wenn die Checkbox ausgewählt ist
+      },
+    }}
+  />
+  <ListItemText primary="PC" />
+</MenuItem>
+<MenuItem value="PlayStation">
+  <Checkbox
+    checked={selectedPlatforms.includes("PlayStation")}
+    sx={{
+      color: "white", // Standardfarbe
+      "&.Mui-checked": {
+        color: "white", // Farbe, wenn die Checkbox ausgewählt ist
+      },
+    }}
+  />
+  <ListItemText primary="PlayStation" />
+</MenuItem>
+<MenuItem value="Xbox">
+  <Checkbox
+    checked={selectedPlatforms.includes("Xbox")}
+    sx={{
+      color: "white", // Standardfarbe
+      "&.Mui-checked": {
+        color: "white", // Farbe, wenn die Checkbox ausgewählt ist
+      },
+    }}
+  />
+  <ListItemText primary="Xbox" />
+</MenuItem>
+<MenuItem value="Nintendo Switch">
+  <Checkbox
+    checked={selectedPlatforms.includes("Nintendo Switch")}
+    sx={{
+      color: "white", // Standardfarbe
+      "&.Mui-checked": {
+        color: "white", // Farbe, wenn die Checkbox ausgewählt ist
+      },
+    }}
+  />
+  <ListItemText primary="Nintendo Switch" />
+</MenuItem>
+      </Select>
+    </FormControl>
+  </Grid>
+</Grid>
 
       {isAdmin && (
         <Button variant="contained" color="primary" onClick={() => setOpen(true)} sx={{ marginBottom: 2 }}>
@@ -231,83 +335,213 @@ const Home = () => {
       </Grid>
 
       {/* Dialog für das Hinzufügen eines Spiels */}
-      <Dialog open={open} onClose={() => setOpen(false)}>
-        <DialogTitle>Neues Spiel hinzufügen</DialogTitle>
-        <DialogContent>
-          <TextField
-            label="Titel"
-            name="title"
-            value={newGame.title}
-            onChange={handleInputChange}
-            fullWidth
-            margin="normal"
-            required
-          />
-          <TextField
-            label="Genre"
-            name="genre"
-            value={newGame.genre}
-            onChange={handleInputChange}
-            fullWidth
-            margin="normal"
-            required
-          />
-          <FormControl fullWidth margin="normal">
-            <InputLabel>Plattform</InputLabel>
-            <Select
-              multiple
-              name="platforms"
-              value={newGame.platforms}
-              onChange={handlePlatformChange}
-              renderValue={(selected) => selected.join(", ")}
-            >
-              <MenuItem value="PC">PC</MenuItem>
-              <MenuItem value="PlayStation">PlayStation</MenuItem>
-              <MenuItem value="Xbox">Xbox</MenuItem>
-              <MenuItem value="Nintendo Switch">Nintendo Switch</MenuItem>
-            </Select>
-          </FormControl>
-          <TextField
-            label="Release-Datum"
-            name="release_date"
-            type="date"
-            value={newGame.release_date}
-            onChange={handleInputChange}
-            InputLabelProps={{ shrink: true }}
-            fullWidth
-            margin="normal"
-            required
-          />
-          <TextField
-            label="Bild-URL"
-            name="image_url"
-            value={newGame.image_url}
-            onChange={handleInputChange}
-            fullWidth
-            margin="normal"
-            required
-          />
-          <TextField
-            label="Beschreibung"
-            name="description"
-            value={newGame.description}
-            onChange={handleInputChange}
-            fullWidth
-            margin="normal"
-            multiline
-            rows={4}
-            required
-          />
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setOpen(false)} color="secondary">
-            Abbrechen
-          </Button>
-          <Button onClick={handleAddGame} color="primary" variant="contained">
-            Hinzufügen
-          </Button>
-        </DialogActions>
-      </Dialog>
+      <Dialog
+  open={open}
+  onClose={() => setOpen(false)}
+  sx={{
+    "& .MuiPaper-root": {
+      border: "2px solid", // Rahmen
+      borderColor: "primary.main", // Rahmenfarbe aus Theme
+      borderRadius: "8px", // Abgerundete Ecken
+      backgroundColor: "white", // Weißer Hintergrund
+    },
+  }}
+>
+  <DialogTitle
+    sx={{
+      fontWeight: "bold",
+      color: "primary.main", // Schriftfarbe aus Theme
+    }}
+  >
+    Neues Spiel hinzufügen
+  </DialogTitle>
+  <DialogContent>
+    <TextField
+      label="Titel"
+      name="title"
+      value={newGame.title}
+      onChange={handleInputChange}
+      fullWidth
+      margin="normal"
+      required
+      sx={{
+        "& .MuiInputBase-input": {
+          color: "primary.main", // Textfarbe
+        },
+        "& .MuiInputLabel-root": {
+          color: "primary.main", // Label-Farbe
+        },
+        "& .MuiOutlinedInput-root": {
+          "& fieldset": {
+            borderColor: "primary.main", // Rahmenfarbe
+          },
+          "&:hover fieldset": {
+            borderColor: "primary.main", // Rahmenfarbe beim Hover
+          },
+          "&.Mui-focused fieldset": {
+            borderColor: "primary.main", // Rahmenfarbe bei Fokus
+          },
+        },
+      }}
+    />
+    <TextField
+      label="Genre"
+      name="genre"
+      value={newGame.genre}
+      onChange={handleInputChange}
+      fullWidth
+      margin="normal"
+      required
+      sx={{
+        "& .MuiInputBase-input": {
+          color: "primary.main", // Textfarbe
+        },
+        "& .MuiInputLabel-root": {
+          color: "primary.main", // Label-Farbe
+        },
+        "& .MuiOutlinedInput-root": {
+          "& fieldset": {
+            borderColor: "primary.main", // Rahmenfarbe
+          },
+          "&:hover fieldset": {
+            borderColor: "primary.main", // Rahmenfarbe beim Hover
+          },
+          "&.Mui-focused fieldset": {
+            borderColor: "primary.main", // Rahmenfarbe bei Fokus
+          },
+        },
+      }}
+    />
+    <FormControl fullWidth margin="normal">
+      <InputLabel sx={{ color: "primary.main" }}>Plattform</InputLabel>
+      <Select
+        multiple
+        name="platforms"
+        value={newGame.platforms}
+        onChange={handlePlatformChange}
+        renderValue={(selected) => selected.join(", ")}
+        sx={{
+          "& .MuiSelect-select": {
+            color: "primary.main", // Textfarbe
+          },
+          "& .MuiOutlinedInput-notchedOutline": {
+            borderColor: "primary.main", // Rahmenfarbe
+          },
+          "&:hover .MuiOutlinedInput-notchedOutline": {
+            borderColor: "primary.main", // Rahmenfarbe beim Hover
+          },
+          "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
+            borderColor: "primary.main", // Rahmenfarbe bei Fokus
+          },
+          "& .MuiSvgIcon-root": {
+            color: "primary.main", // Dropdown-Pfeil-Farbe
+          },
+        }}
+      >
+        <MenuItem value="PC">PC</MenuItem>
+        <MenuItem value="PlayStation">PlayStation</MenuItem>
+        <MenuItem value="Xbox">Xbox</MenuItem>
+        <MenuItem value="Nintendo Switch">Nintendo Switch</MenuItem>
+      </Select>
+    </FormControl>
+    <TextField
+      label="Release-Datum"
+      name="release_date"
+      type="date"
+      value={newGame.release_date}
+      onChange={handleInputChange}
+      InputLabelProps={{ shrink: true }}
+      fullWidth
+      margin="normal"
+      required
+      sx={{
+        "& .MuiInputBase-input": {
+          color: "primary.main", // Textfarbe
+        },
+        "& .MuiInputLabel-root": {
+          color: "primary.main", // Label-Farbe
+        },
+        "& .MuiOutlinedInput-root": {
+          "& fieldset": {
+            borderColor: "primary.main", // Rahmenfarbe
+          },
+          "&:hover fieldset": {
+            borderColor: "primary.main", // Rahmenfarbe beim Hover
+          },
+          "&.Mui-focused fieldset": {
+            borderColor: "primary.main", // Rahmenfarbe bei Fokus
+          },
+        },
+      }}
+    />
+    <TextField
+      label="Bild-URL"
+      name="image_url"
+      value={newGame.image_url}
+      onChange={handleInputChange}
+      fullWidth
+      margin="normal"
+      required
+      sx={{
+        "& .MuiInputBase-input": {
+          color: "primary.main", // Textfarbe
+        },
+        "& .MuiInputLabel-root": {
+          color: "primary.main", // Label-Farbe
+        },
+        "& .MuiOutlinedInput-root": {
+          "& fieldset": {
+            borderColor: "primary.main", // Rahmenfarbe
+          },
+          "&:hover fieldset": {
+            borderColor: "primary.main", // Rahmenfarbe beim Hover
+          },
+          "&.Mui-focused fieldset": {
+            borderColor: "primary.main", // Rahmenfarbe bei Fokus
+          },
+        },
+      }}
+    />
+    <TextField
+      label="Beschreibung"
+      name="description"
+      value={newGame.description}
+      onChange={handleInputChange}
+      fullWidth
+      margin="normal"
+      multiline
+      rows={4}
+      required
+      sx={{
+        "& .MuiInputBase-input": {
+          color: "primary.main", // Textfarbe
+        },
+        "& .MuiInputLabel-root": {
+          color: "primary.main", // Label-Farbe
+        },
+        "& .MuiOutlinedInput-root": {
+          "& fieldset": {
+            borderColor: "primary.main", // Rahmenfarbe
+          },
+          "&:hover fieldset": {
+            borderColor: "primary.main", // Rahmenfarbe beim Hover
+          },
+          "&.Mui-focused fieldset": {
+            borderColor: "primary.main", // Rahmenfarbe bei Fokus
+          },
+        },
+      }}
+    />
+  </DialogContent>
+  <DialogActions>
+    <Button onClick={() => setOpen(false)} color="error">
+      Abbrechen
+    </Button>
+    <Button onClick={handleAddGame} color="secondary" variant="contained">
+      Hinzufügen
+    </Button>
+  </DialogActions>
+</Dialog>
     </Container>
   );
 };

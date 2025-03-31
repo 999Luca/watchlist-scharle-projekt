@@ -3,16 +3,27 @@
 @tailwind utilities;
 
 body {
-  @apply font-sans; /* Tailwind-Klasse für die Schriftart */
+  @apply font-sans bg-gradient-to-b from-blue-900 to-blue-700 text-white;
 }
 
-/* Überschreibe die Schriftart für alle MuiTypography-Komponenten */
-.MuiTypography-root {
-  font-family: "Trebuchet MS", sans-serif !important; /* Erzwinge die Schriftart */
+h1, h2, h3, h4, h5, h6 {
+  @apply font-bold text-white;
 }
 
-/* Überschreibe die Schriftart für alle MuiButton-Komponenten */
-.MuiButton-root {
-  font-family: "Trebuchet MS", sans-serif !important; /* Erzwinge die Schriftart */
+button {
+  @apply rounded-lg bg-blue-600 hover:bg-blue-500 text-white px-4 py-2 transition-all;
 }
 
+.card {
+  @apply bg-blue-800 text-white rounded-lg shadow-lg p-4;
+}
+
+input, select, textarea {
+  @apply bg-blue-700 text-white border border-blue-600 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500;
+}
+
+body {
+  background-color: #e8f5e9; /* Ganz helles Grün */
+  margin: 0;
+  font-family: "Trebuchet MS", sans-serif;
+}

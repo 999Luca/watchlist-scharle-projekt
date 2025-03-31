@@ -171,176 +171,359 @@ const GameCard = ({ game, onGameUpdated, onGameDeleted }) => {
         sx={{ height: 200 }}
       />
       <CardContent sx={{ flexGrow: 1 }}>
-        <Typography variant="h5" component="div" gutterBottom>
-          {game.title}
-        </Typography>
-        <Typography variant="body2" color="text.secondary">
-          Genre: {game.genre}
-        </Typography>
-        <Typography variant="body2" color="text.secondary">
-          Plattformen: {(game.platforms || []).join(", ")}
-        </Typography>
-        <Typography variant="body2" color="text.secondary">
-          Release: {game.release_date}
-        </Typography>
-        <Typography variant="body2" color="text.secondary">
-          Beschreibung: {game.description || "Keine Beschreibung verfügbar."}
-        </Typography>
+  <Typography variant="h5" component="div" gutterBottom>
+    {game.title}
+  </Typography>
+  <Typography
+  variant="body1"
+  color="text.primary"
+  sx={{ marginBottom: 2, textAlign: "justify" }} // Blocksatz hinzufügen
+>
+  {game.description || "Keine Beschreibung verfügbar."}
+</Typography>
+  <Typography variant="body2" color="text.secondary">
+    Genre: {game.genre}
+  </Typography>
+  <Typography variant="body2" color="text.secondary">
+    Plattformen: {(game.platforms || []).join(", ")}
+  </Typography>
+  <Typography variant="body2" color="text.secondary">
+    Release: {game.release_date}
+  </Typography>
 
-        <Typography
-          variant="body2"
-          color="text.secondary"
-          sx={{
-            display: "flex",
-            alignItems: "center",
-            marginTop: 2,
-            cursor: !isAdmin ? "pointer" : "default", // Zeige den Cursor nur für nicht-Admins
-          }}
-          onClick={handleNavigateToReviews} // Klick-Handler
-        >
-          <StarIcon sx={{ color: "#FFD700", marginRight: 0.5 }} />
-          {game.average_rating || "N/A"}
-          {game.reviews_count > 0 && (
-            <span style={{ marginLeft: 4 }}>
-              ({game.reviews_count} Bewertung{game.reviews_count > 1 ? "en" : ""})
-            </span>
-          )}
-        </Typography>
-      </CardContent>
-      <Box sx={{ display: "flex", alignItems: "center", justifyContent: "flex-end", marginTop: 2 }}>
-        {isLoggedIn && !isAdmin && (
-          <>
-            {isInWatchlist ? (
-              <Typography
-                variant="body2"
-                color="text.secondary"
-                sx={{ display: "flex", alignItems: "center", marginRight: 2 }}
-              >
-                Spiel bereits in der Watchlist
-                <IconButton color="disabled" aria-label="Bereits in der Watchlist" disabled>
-                  <FavoriteIcon />
-                </IconButton>
-              </Typography>
-            ) : (
-              <IconButton
-                sx={{ color: "#001f3f" }} // Farbe des Icons auf Blau setzen
-                onClick={handleAddToWatchlist}
-                aria-label="Zur Watchlist hinzufügen"
-              >
-                <FavoriteIcon />
-              </IconButton>
-            )}
-          </>
-        )}
-        {isAdmin && (
-          <IconButton
-            color="primary"
-            onClick={() => setOpenEditDialog(true)}
-            aria-label="Spiel bearbeiten"
-          >
-            <EditIcon />
-          </IconButton>
-        )}
-        {isAdmin && (
-          <IconButton
-            color="error"
-            onClick={() => onGameDeleted(game.game_id)}
-            aria-label="Spiel löschen"
-          >
-            <DeleteIcon />
-          </IconButton>
-        )}
-      </Box>
+  <Typography
+    variant="body2"
+    color="text.secondary"
+    sx={{
+      display: "flex",
+      alignItems: "center",
+      marginTop: 2,
+      cursor: !isAdmin ? "pointer" : "default", // Zeige den Cursor nur für nicht-Admins
+    }}
+    onClick={handleNavigateToReviews} // Klick-Handler
+  >
+    <StarIcon sx={{ color: "#FFD700", marginRight: 0.5 }} />
+    {game.average_rating || "N/A"}
+    {game.reviews_count > 0 && (
+      <span style={{ marginLeft: 4 }}>
+        ({game.reviews_count} Bewertung{game.reviews_count > 1 ? "en" : ""})
+      </span>
+    )}
+  </Typography>
+</CardContent>
+<Box sx={{ display: "flex", alignItems: "center", justifyContent: "flex-end", marginTop: 2 }}>
+  {isLoggedIn && !isAdmin && (
+    <>
+      {!isInWatchlist ? (
+  <Box
+    sx={{
+      display: "flex",
+      alignItems: "center",
+      cursor: "pointer",
+      color: "#4caf50", // Gleiche grüne Farbe wie das Icon
+      flexDirection: "row-reverse", // Text links vom Icon
+      gap: 1, // Abstand zwischen Text und Icon
+    }}
+    onClick={handleAddToWatchlist}
+  >
+    <IconButton
+      sx={{ color: "#4caf50" }}
+      aria-label="Zur Watchlist hinzufügen"
+    >
+      <FavoriteIcon />
+    </IconButton>
+    <Typography
+      variant="body2"
+      sx={{ color: "#4caf50", fontWeight: "bold" }}
+    >
+      Zur Watchlist hinzufügen
+    </Typography>
+  </Box>
+) : (
+  <Typography
+    variant="body2"
+    color="text.secondary"
+    sx={{ display: "flex", alignItems: "center", marginRight: 2 }}
+  >
+    Spiel bereits in der Watchlist
+    <IconButton color="disabled" aria-label="Bereits in der Watchlist" disabled>
+      <FavoriteIcon />
+    </IconButton>
+  </Typography>
+)}
+    </>
+  )}
+  {isAdmin && (
+    <IconButton
+      color="secondary"
+      onClick={() => setOpenEditDialog(true)}
+      aria-label="Spiel bearbeiten"
+    >
+      <EditIcon />
+    </IconButton>
+  )}
+  {isAdmin && (
+    <IconButton
+      color="error"
+      onClick={() => onGameDeleted(game.game_id)}
+      aria-label="Spiel löschen"
+    >
+      <DeleteIcon />
+    </IconButton>
+  )}
+</Box>
 
-      <Dialog open={openEditDialog} onClose={() => setOpenEditDialog(false)}>
-        <DialogTitle>Spiel bearbeiten</DialogTitle>
-        <DialogContent>
-          <TextField
-            label="Titel"
-            name="title"
-            value={formData.title}
-            onChange={handleInputChange}
-            fullWidth
-            margin="normal"
-            required
+<Dialog
+  open={openEditDialog}
+  onClose={() => setOpenEditDialog(false)}
+  sx={{
+    "& .MuiPaper-root": {
+      border: "2px solid", // Rahmen
+      borderColor: "primary.main", // Rahmenfarbe
+      borderRadius: "8px", // Abgerundete Ecken
+      backgroundColor: "white", // Weißer Hintergrund
+    },
+  }}
+>
+  <DialogTitle
+    sx={{
+      fontWeight: "bold",
+      color: "primary.main", // Schriftfarbe in Primärfarbe
+    }}
+  >
+    Spiel bearbeiten
+  </DialogTitle>
+  <DialogContent>
+    <TextField
+      label="Titel"
+      name="title"
+      value={formData.title}
+      onChange={handleInputChange}
+      fullWidth
+      margin="normal"
+      required
+      sx={{
+        "& .MuiInputBase-input": {
+          color: "primary.main", // Textfarbe
+        },
+        "& .MuiInputLabel-root": {
+          color: "primary.main", // Label-Farbe
+        },
+        "& .MuiOutlinedInput-root": {
+          "& fieldset": {
+            borderColor: "primary.main", // Rahmenfarbe
+          },
+          "&:hover fieldset": {
+            borderColor: "primary.main", // Rahmenfarbe beim Hover
+          },
+          "&.Mui-focused fieldset": {
+            borderColor: "primary.main", // Rahmenfarbe bei Fokus
+          },
+        },
+      }}
+    />
+    <TextField
+      label="Genre"
+      name="genre"
+      value={formData.genre}
+      onChange={handleInputChange}
+      fullWidth
+      margin="normal"
+      required
+      sx={{
+        "& .MuiInputBase-input": {
+          color: "primary.main", // Textfarbe
+        },
+        "& .MuiInputLabel-root": {
+          color: "primary.main", // Label-Farbe
+        },
+        "& .MuiOutlinedInput-root": {
+          "& fieldset": {
+            borderColor: "primary.main", // Rahmenfarbe
+          },
+          "&:hover fieldset": {
+            borderColor: "primary.main", // Rahmenfarbe beim Hover
+          },
+          "&.Mui-focused fieldset": {
+            borderColor: "primary.main", // Rahmenfarbe bei Fokus
+          },
+        },
+      }}
+    />
+    <FormControl fullWidth margin="normal">
+      <InputLabel sx={{ color: "primary.main" }}>Plattformen</InputLabel>
+      <Select
+        multiple
+        name="platforms"
+        value={formData.platforms}
+        onChange={handlePlatformChange}
+        renderValue={(selected) => selected.join(", ")}
+        sx={{
+          "& .MuiSelect-select": {
+            color: "primary.main", // Textfarbe
+          },
+          "& .MuiOutlinedInput-notchedOutline": {
+            borderColor: "primary.main", // Rahmenfarbe
+          },
+          "&:hover .MuiOutlinedInput-notchedOutline": {
+            borderColor: "primary.main", // Rahmenfarbe beim Hover
+          },
+          "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
+            borderColor: "primary.main", // Rahmenfarbe bei Fokus
+          },
+          "& .MuiSvgIcon-root": {
+            color: "primary.main", // Dropdown-Pfeil-Farbe
+          },
+        }}
+      >
+        <MenuItem value="PC">
+          <Checkbox
+            checked={formData.platforms.includes("PC")}
+            sx={{
+              color: "primary.main", // Standardfarbe
+              "&.Mui-checked": {
+                color: "primary.main", // Farbe, wenn ausgewählt
+              },
+            }}
           />
-          <TextField
-            label="Genre"
-            name="genre"
-            value={formData.genre}
-            onChange={handleInputChange}
-            fullWidth
-            margin="normal"
-            required
+          <ListItemText primary="PC" />
+        </MenuItem>
+        <MenuItem value="PlayStation">
+          <Checkbox
+            checked={formData.platforms.includes("PlayStation")}
+            sx={{
+              color: "primary.main", // Standardfarbe
+              "&.Mui-checked": {
+                color: "primary.main", // Farbe, wenn ausgewählt
+              },
+            }}
           />
-          <FormControl fullWidth margin="normal">
-            <InputLabel>Plattformen</InputLabel>
-            <Select
-              multiple
-              name="platforms"
-              value={formData.platforms}
-              onChange={handlePlatformChange}
-              renderValue={(selected) => selected.join(", ")}
-            >
-              <MenuItem value="PC">
-                <Checkbox checked={formData.platforms.includes("PC")} />
-                <ListItemText primary="PC" />
-              </MenuItem>
-              <MenuItem value="PlayStation">
-                <Checkbox checked={formData.platforms.includes("PlayStation")} />
-                <ListItemText primary="PlayStation" />
-              </MenuItem>
-              <MenuItem value="Xbox">
-                <Checkbox checked={formData.platforms.includes("Xbox")} />
-                <ListItemText primary="Xbox" />
-              </MenuItem>
-              <MenuItem value="Nintendo Switch">
-                <Checkbox checked={formData.platforms.includes("Nintendo Switch")} />
-                <ListItemText primary="Nintendo Switch" />
-              </MenuItem>
-            </Select>
-          </FormControl>
-          <TextField
-            label="Release-Datum"
-            name="release_date"
-            type="date"
-            value={formData.release_date}
-            onChange={handleInputChange}
-            InputLabelProps={{ shrink: true }}
-            fullWidth
-            margin="normal"
-            required
+          <ListItemText primary="PlayStation" />
+        </MenuItem>
+        <MenuItem value="Xbox">
+          <Checkbox
+            checked={formData.platforms.includes("Xbox")}
+            sx={{
+              color: "primary.main", // Standardfarbe
+              "&.Mui-checked": {
+                color: "primary.main", // Farbe, wenn ausgewählt
+              },
+            }}
           />
-          <TextField
-            label="Bild-URL"
-            name="image_url"
-            value={formData.image_url}
-            onChange={handleInputChange}
-            fullWidth
-            margin="normal"
-            required
+          <ListItemText primary="Xbox" />
+        </MenuItem>
+        <MenuItem value="Nintendo Switch">
+          <Checkbox
+            checked={formData.platforms.includes("Nintendo Switch")}
+            sx={{
+              color: "primary.main", // Standardfarbe
+              "&.Mui-checked": {
+                color: "primary.main", // Farbe, wenn ausgewählt
+              },
+            }}
           />
-          <TextField
-            label="Beschreibung"
-            name="description"
-            value={formData.description}
-            onChange={handleInputChange}
-            fullWidth
-            margin="normal"
-            multiline
-            rows={4}
-            required
-          />
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setOpenEditDialog(false)} color="secondary">
-            Abbrechen
-          </Button>
-          <Button onClick={handleEditGame} color="primary" variant="contained">
-            Speichern
-          </Button>
-        </DialogActions>
-      </Dialog>
+          <ListItemText primary="Nintendo Switch" />
+        </MenuItem>
+      </Select>
+    </FormControl>
+    <TextField
+      label="Release-Datum"
+      name="release_date"
+      type="date"
+      value={formData.release_date}
+      onChange={handleInputChange}
+      InputLabelProps={{ shrink: true }}
+      fullWidth
+      margin="normal"
+      required
+      sx={{
+        "& .MuiInputBase-input": {
+          color: "primary.main", // Textfarbe
+        },
+        "& .MuiInputLabel-root": {
+          color: "primary.main", // Label-Farbe
+        },
+        "& .MuiOutlinedInput-root": {
+          "& fieldset": {
+            borderColor: "primary.main", // Rahmenfarbe
+          },
+          "&:hover fieldset": {
+            borderColor: "primary.main", // Rahmenfarbe beim Hover
+          },
+          "&.Mui-focused fieldset": {
+            borderColor: "primary.main", // Rahmenfarbe bei Fokus
+          },
+        },
+      }}
+    />
+    <TextField
+      label="Bild-URL"
+      name="image_url"
+      value={formData.image_url}
+      onChange={handleInputChange}
+      fullWidth
+      margin="normal"
+      required
+      sx={{
+        "& .MuiInputBase-input": {
+          color: "primary.main", // Textfarbe
+        },
+        "& .MuiInputLabel-root": {
+          color: "primary.main", // Label-Farbe
+        },
+        "& .MuiOutlinedInput-root": {
+          "& fieldset": {
+            borderColor: "primary.main", // Rahmenfarbe
+          },
+          "&:hover fieldset": {
+            borderColor: "primary.main", // Rahmenfarbe beim Hover
+          },
+          "&.Mui-focused fieldset": {
+            borderColor: "primary.main", // Rahmenfarbe bei Fokus
+          },
+        },
+      }}
+    />
+    <TextField
+      label="Beschreibung"
+      name="description"
+      value={formData.description}
+      onChange={handleInputChange}
+      fullWidth
+      margin="normal"
+      multiline
+      rows={4}
+      required
+      sx={{
+        "& .MuiInputBase-input": {
+          color: "primary.main", // Textfarbe
+        },
+        "& .MuiInputLabel-root": {
+          color: "primary.main", // Label-Farbe
+        },
+        "& .MuiOutlinedInput-root": {
+          "& fieldset": {
+            borderColor: "primary.main", // Rahmenfarbe
+          },
+          "&:hover fieldset": {
+            borderColor: "primary.main", // Rahmenfarbe beim Hover
+          },
+          "&.Mui-focused fieldset": {
+            borderColor: "primary.main", // Rahmenfarbe bei Fokus
+          },
+        },
+      }}
+    />
+  </DialogContent>
+  <DialogActions>
+    <Button onClick={() => setOpenEditDialog(false)} color="error">
+      Abbrechen
+    </Button>
+    <Button onClick={handleEditGame} color="secondary" variant="contained">
+      Speichern
+    </Button>
+  </DialogActions>
+</Dialog>
     </Card>
   );
 };

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { TextField, Button, Typography, Box } from '@mui/material';
-import { useNavigate } from 'react-router-dom'; // Importiere useNavigate
+import { useNavigate } from 'react-router-dom';
 
 const RegisterPage = () => {
   const [formData, setFormData] = useState({
@@ -8,7 +8,7 @@ const RegisterPage = () => {
     email: '',
     password: '',
   });
-  const navigate = useNavigate(); // Initialisiere useNavigate
+  const navigate = useNavigate();
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -17,27 +17,23 @@ const RegisterPage = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log("Form data submitted:", formData); // Debugging: Formulardaten ausgeben
-  
     try {
       const response = await fetch('http://localhost:5000/users/register', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(formData),
       });
-  
-      console.log("Response status:", response.status); // Debugging: HTTP-Status ausgeben
+
       const data = await response.json();
-      console.log("Response data:", data); // Debugging: Antwortdaten ausgeben
-  
+
       if (response.ok) {
         alert('Registrierung erfolgreich!');
-        navigate('/login'); // Weiterleitung zur Login-Seite
+        navigate('/login');
       } else {
         alert(`Fehler: ${data.error || data.message}`);
       }
     } catch (error) {
-      console.error("Error during registration:", error); // Debugging: Fehler ausgeben
+      console.error("Error during registration:", error);
       alert('Ein Fehler ist aufgetreten.');
     }
   };
@@ -73,6 +69,25 @@ const RegisterPage = () => {
           value={formData.username}
           onChange={handleInputChange}
           required
+          sx={{
+            "& .MuiInputBase-input": {
+              color: "primary.main", // Text in Primary Color
+            },
+            "& .MuiInputLabel-root": {
+              color: "primary.main", // Label in Primary Color
+            },
+            "& .MuiOutlinedInput-root": {
+              "& fieldset": {
+                borderColor: "primary.main", // Rahmen in Primary Color
+              },
+              "&:hover fieldset": {
+                borderColor: "primary.main", // Rahmen in Primary Color beim Hover
+              },
+              "&.Mui-focused fieldset": {
+                borderColor: "primary.main", // Rahmen in Primary Color bei Fokus
+              },
+            },
+          }}
         />
         <TextField
           label="E-Mail"
@@ -81,6 +96,25 @@ const RegisterPage = () => {
           value={formData.email}
           onChange={handleInputChange}
           required
+          sx={{
+            "& .MuiInputBase-input": {
+              color: "primary.main", // Text in Primary Color
+            },
+            "& .MuiInputLabel-root": {
+              color: "primary.main", // Label in Primary Color
+            },
+            "& .MuiOutlinedInput-root": {
+              "& fieldset": {
+                borderColor: "primary.main", // Rahmen in Primary Color
+              },
+              "&:hover fieldset": {
+                borderColor: "primary.main", // Rahmen in Primary Color beim Hover
+              },
+              "&.Mui-focused fieldset": {
+                borderColor: "primary.main", // Rahmen in Primary Color bei Fokus
+              },
+            },
+          }}
         />
         <TextField
           label="Passwort"
@@ -89,6 +123,25 @@ const RegisterPage = () => {
           value={formData.password}
           onChange={handleInputChange}
           required
+          sx={{
+            "& .MuiInputBase-input": {
+              color: "primary.main", // Text in Primary Color
+            },
+            "& .MuiInputLabel-root": {
+              color: "primary.main", // Label in Primary Color
+            },
+            "& .MuiOutlinedInput-root": {
+              "& fieldset": {
+                borderColor: "primary.main", // Rahmen in Primary Color
+              },
+              "&:hover fieldset": {
+                borderColor: "primary.main", // Rahmen in Primary Color beim Hover
+              },
+              "&.Mui-focused fieldset": {
+                borderColor: "primary.main", // Rahmen in Primary Color bei Fokus
+              },
+            },
+          }}
         />
         <Button type="submit" variant="contained" color="primary">
           Registrieren

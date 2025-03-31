@@ -86,14 +86,18 @@ const WatchlistGameCard = ({ game, onStatusChange, onRemoveFromWatchlist }) => {
       <Typography variant="h5" component="div" gutterBottom>
         {game.title}
       </Typography>
+      <Typography
+  variant="body2"
+  color="text.secondary"
+  sx={{ marginBottom: 2, textAlign: "justify" }} // Blocksatz hinzufügen
+>
+  {game.description || "Keine Beschreibung verfügbar."}
+</Typography>
       <Typography variant="body2" color="text.secondary">
         Genre: {game.genre}
       </Typography>
       <Typography variant="body2" color="text.secondary">
         Release: {game.release_date}
-      </Typography>
-      <Typography variant="body2" color="text.secondary" sx={{ marginBottom: 2 }}>
-        Beschreibung: {game.description || "Keine Beschreibung verfügbar."}
       </Typography>
     </Box>
 
@@ -102,37 +106,74 @@ const WatchlistGameCard = ({ game, onStatusChange, onRemoveFromWatchlist }) => {
             Status:
           </Typography>
           <Select
-            value={game.status}
-            onChange={(e) => onStatusChange(game.game_id, e.target.value)}
-            fullWidth
-            variant="outlined"
-            size="small"
-            sx={{ marginBottom: 2 }}
-          >
-            <MenuItem value="will spielen">Will spielen</MenuItem>
-            <MenuItem value="spiele gerade">Spiele gerade</MenuItem>
-            <MenuItem value="fertig gespielt">Fertig gespielt</MenuItem>
-          </Select>
+  value={game.status}
+  onChange={(e) => onStatusChange(game.game_id, e.target.value)}
+  fullWidth
+  variant="outlined"
+  size="small"
+  sx={{
+    marginBottom: 2,
+    "& .MuiSelect-select": {
+      color: "white", // Textfarbe
+    },
+    "& .MuiOutlinedInput-notchedOutline": {
+      borderColor: "white", // Rahmenfarbe
+    },
+    "&:hover .MuiOutlinedInput-notchedOutline": {
+      borderColor: "white", // Rahmenfarbe beim Hover
+    },
+    "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
+      borderColor: "white", // Rahmenfarbe bei Fokus
+    },
+    "& .MuiSvgIcon-root": {
+      color: "white", // Dropdown-Pfeil-Farbe
+    },
+  }}
+>
+  <MenuItem value="will spielen">Will spielen</MenuItem>
+  <MenuItem value="spiele gerade">Spiele gerade</MenuItem>
+  <MenuItem value="fertig gespielt">Fertig gespielt</MenuItem>
+</Select>
 
-          <Box sx={{ display: "flex", alignItems: "center", gap: 1, marginBottom: 2 }}>
-            <TextField
-              label="Spielstunden"
-              type="number"
-              value={playtime}
-              onChange={(e) => setPlaytime(e.target.value)}
-              fullWidth
-              variant="outlined"
-              size="small"
-              disabled={game.status === "will spielen"}
-            />
-            <IconButton
-              color="primary"
-              onClick={handleSavePlaytime}
-              disabled={isSaving || game.status === "will spielen"}
-            >
-              <CheckIcon />
-            </IconButton>
-          </Box>
+<Box sx={{ display: "flex", alignItems: "center", gap: 1, marginBottom: 2 }}>
+  <TextField
+    label="Spielstunden"
+    type="number"
+    value={playtime}
+    onChange={(e) => setPlaytime(e.target.value)}
+    fullWidth
+    variant="outlined"
+    size="small"
+    disabled={game.status === "will spielen"}
+    sx={{
+      "& .MuiInputBase-input": {
+        color: "white", // Textfarbe
+      },
+      "& .MuiInputLabel-root": {
+        color: "white", // Label-Farbe
+      },
+      "& .MuiOutlinedInput-root": {
+        "& fieldset": {
+          borderColor: "white", // Rahmenfarbe
+        },
+        "&:hover fieldset": {
+          borderColor: "white", // Rahmenfarbe beim Hover
+        },
+        "&.Mui-focused fieldset": {
+          borderColor: "white", // Rahmenfarbe bei Fokus
+        },
+      },
+    }}
+  />
+  <IconButton
+    color="primary"
+    onClick={handleSavePlaytime}
+    disabled={isSaving || game.status === "will spielen"}
+  >
+    <CheckIcon />
+  </IconButton>
+
+</Box>
 
           <Typography variant="body2" color="text.secondary" sx={{ marginBottom: 2 }}>
             Du hast insgesamt <strong>{playtime} Stunden</strong> gespielt.
@@ -140,7 +181,7 @@ const WatchlistGameCard = ({ game, onStatusChange, onRemoveFromWatchlist }) => {
 
           <Button
             variant="contained"
-            color="primary"
+            color="secondary"
             startIcon={<RateReviewIcon />}
             onClick={() => navigate(`/review/${game.game_id}`)}
             sx={{ width: "100%", marginBottom: 2 }}

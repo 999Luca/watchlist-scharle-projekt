@@ -1,9 +1,3 @@
-#root {
-  max-width: 1280px;
-  margin: 0 auto;
-  padding: 2rem;
-  text-align: center;
-}
 
 .logo {
   height: 6em;
@@ -33,8 +27,19 @@
   }
 }
 
+#root {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 2rem;
+  background: linear-gradient(to bottom, #001f3f, #002b5c);
+  color: white;
+  font-family: "Roboto", sans-serif;
+}
+
 .card {
-  padding: 2em;
+  background: #002b5c;
+  border-radius: 12px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 }
 
 .read-the-docs {

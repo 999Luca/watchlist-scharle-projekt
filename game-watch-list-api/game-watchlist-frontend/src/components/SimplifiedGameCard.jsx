@@ -29,6 +29,13 @@ const SimplifiedGameCard = ({ game }) => {
         <Typography variant="h5" component="div" gutterBottom>
           {game.title}
         </Typography>
+        <Typography
+  variant="body2"
+  color="text.secondary"
+  sx={{ textAlign: "justify" }} // Blocksatz hinzufügen
+>
+  {game.description || "Keine Beschreibung verfügbar."}
+</Typography>
         <Typography variant="body2" color="text.secondary">
           Genre: {game.genre}
         </Typography>
@@ -37,9 +44,6 @@ const SimplifiedGameCard = ({ game }) => {
         </Typography>
         <Typography variant="body2" color="text.secondary">
           Plattformen: {(game.platforms || []).join(", ") || "Keine Plattformen angegeben"}
-        </Typography>
-        <Typography variant="body2" color="text.secondary">
-          Beschreibung: {game.description || "Keine Beschreibung verfügbar."}
         </Typography>
       </CardContent>
     </Card>

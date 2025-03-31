@@ -346,68 +346,134 @@ const ReviewPage = () => {
         </Box>
   
         {/* Dialog für Review hinzufügen/bearbeiten */}
-        <Dialog open={openDialog} onClose={handleCloseDialog}>
-          <DialogTitle sx={{ fontWeight: "bold" }}>
-            {isEditing ? "Review bearbeiten" : "Review hinzufügen"}
-          </DialogTitle>
-          <DialogContent>
-            <Box sx={{ display: "flex", alignItems: "center", mb: 2 }}>
-              <Typography variant="body1" sx={{ mr: 2 }}>
-                Bewertung:
-              </Typography>
-              <Rating
-                name="rating"
-                value={userReview.rating}
-                onChange={handleRatingChange}
-                precision={1}
-              />
-            </Box>
-            <TextField
-              label="Kommentar"
-              name="comment"
-              value={userReview.comment}
-              onChange={handleInputChange}
-              fullWidth
-              multiline
-              rows={4}
-              sx={{ mb: 2 }}
-            />
-            <TextField
-              label="Spielzeit (in Stunden)"
-              name="playtime_hours"
-              type="number"
-              value={userReview.playtime_hours}
-              onChange={handleInputChange}
-              fullWidth
-              sx={{ mb: 2 }}
-            />
-            <Select
-              name="platform"
-              value={userReview.platform}
-              onChange={handleInputChange}
-              fullWidth
-              displayEmpty
-              sx={{ mb: 2 }}
-            >
-              <MenuItem value="" disabled>
-                Plattform auswählen
-              </MenuItem>
-              <MenuItem value="PC">PC</MenuItem>
-              <MenuItem value="PlayStation">PlayStation</MenuItem>
-              <MenuItem value="Xbox">Xbox</MenuItem>
-              <MenuItem value="Nintendo">Nintendo</MenuItem>
-              <MenuItem value="Mobile">Mobile</MenuItem>
-            </Select>
-          </DialogContent>
-          <DialogActions>
-            <Button onClick={handleCloseDialog} color="secondary">
-              Abbrechen
-            </Button>
-            <Button onClick={handleSubmitReview} color="primary" variant="contained">
-              Speichern
-            </Button>
-          </DialogActions>
-        </Dialog>
+        <Dialog
+  open={openDialog}
+  onClose={handleCloseDialog}
+  sx={{
+    "& .MuiPaper-root": {
+      border: "2px solid", // Rahmen
+      borderColor: "primary.main", // Rahmenfarbe
+      borderRadius: "8px", // Abgerundete Ecken
+      backgroundColor: "white", // Weißer Hintergrund
+    },
+  }}
+>
+  <DialogTitle sx={{ fontWeight: "bold", color: "primary.main" }}>
+    {isEditing ? "Review bearbeiten" : "Review hinzufügen"}
+  </DialogTitle>
+  <DialogContent>
+    <Box sx={{ display: "flex", alignItems: "center", mb: 2 }}>
+      <Typography variant="body1" sx={{ mr: 2, color: "primary.main" }}>
+        Bewertung:
+      </Typography>
+      <Rating
+        name="rating"
+        value={userReview.rating}
+        onChange={handleRatingChange}
+        precision={1}
+      />
+    </Box>
+    <TextField
+      label="Kommentar"
+      name="comment"
+      value={userReview.comment}
+      onChange={handleInputChange}
+      fullWidth
+      multiline
+      rows={4}
+      sx={{
+        mb: 2,
+        "& .MuiInputBase-input": {
+          color: "primary.main", // Textfarbe
+        },
+        "& .MuiInputLabel-root": {
+          color: "primary.main", // Label-Farbe
+        },
+        "& .MuiOutlinedInput-root": {
+          "& fieldset": {
+            borderColor: "primary.main", // Rahmenfarbe
+          },
+          "&:hover fieldset": {
+            borderColor: "primary.main", // Rahmenfarbe beim Hover
+          },
+          "&.Mui-focused fieldset": {
+            borderColor: "primary.main", // Rahmenfarbe bei Fokus
+          },
+        },
+      }}
+    />
+    <TextField
+      label="Spielzeit (in Stunden)"
+      name="playtime_hours"
+      type="number"
+      value={userReview.playtime_hours}
+      onChange={handleInputChange}
+      fullWidth
+      sx={{
+        mb: 2,
+        "& .MuiInputBase-input": {
+          color: "primary.main", // Textfarbe
+        },
+        "& .MuiInputLabel-root": {
+          color: "primary.main", // Label-Farbe
+        },
+        "& .MuiOutlinedInput-root": {
+          "& fieldset": {
+            borderColor: "primary.main", // Rahmenfarbe
+          },
+          "&:hover fieldset": {
+            borderColor: "primary.main", // Rahmenfarbe beim Hover
+          },
+          "&.Mui-focused fieldset": {
+            borderColor: "primary.main", // Rahmenfarbe bei Fokus
+          },
+        },
+      }}
+    />
+    <Select
+      name="platform"
+      value={userReview.platform}
+      onChange={handleInputChange}
+      fullWidth
+      displayEmpty
+      sx={{
+        mb: 2,
+        "& .MuiSelect-select": {
+          color: "primary.main", // Textfarbe
+        },
+        "& .MuiOutlinedInput-notchedOutline": {
+          borderColor: "primary.main", // Rahmenfarbe
+        },
+        "&:hover .MuiOutlinedInput-notchedOutline": {
+          borderColor: "primary.main", // Rahmenfarbe beim Hover
+        },
+        "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
+          borderColor: "primary.main", // Rahmenfarbe bei Fokus
+        },
+        "& .MuiSvgIcon-root": {
+          color: "primary.main", // Dropdown-Pfeil-Farbe
+        },
+      }}
+    >
+      <MenuItem value="" disabled>
+        Plattform auswählen
+      </MenuItem>
+      <MenuItem value="PC">PC</MenuItem>
+      <MenuItem value="PlayStation">PlayStation</MenuItem>
+      <MenuItem value="Xbox">Xbox</MenuItem>
+      <MenuItem value="Nintendo">Nintendo</MenuItem>
+      <MenuItem value="Mobile">Mobile</MenuItem>
+    </Select>
+  </DialogContent>
+  <DialogActions>
+    <Button onClick={handleCloseDialog} color="error">
+      Abbrechen
+    </Button>
+    <Button onClick={handleSubmitReview} color="secondary" variant="contained">
+      Speichern
+    </Button>
+  </DialogActions>
+</Dialog>
       </Container>
     </Box>
   );
