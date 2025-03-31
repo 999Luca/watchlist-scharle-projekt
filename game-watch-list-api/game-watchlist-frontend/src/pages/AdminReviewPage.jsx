@@ -179,7 +179,7 @@ const AdminReviewPage = () => {
                   borderRadius: 2,
                   overflow: "hidden",
                   mb: 2,
-                  backgroundColor: "primary.main", // Primärfarbe als Hintergrund
+                  backgroundColor: "#002b5c", // Primärfarbe als Hintergrund
                   color: "white", // Weißer Text
                 }}
               >

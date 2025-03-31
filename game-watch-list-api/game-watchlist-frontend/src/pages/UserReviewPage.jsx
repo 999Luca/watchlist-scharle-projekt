@@ -286,6 +286,7 @@ const ReviewPage = () => {
                 display: "flex",
                 flexDirection: "column",
                 justifyContent: "space-between",
+                backgroundColor: "#002b5c", 
               }}
             >
               <CardContent>
