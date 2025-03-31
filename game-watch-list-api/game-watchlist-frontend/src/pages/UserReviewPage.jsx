@@ -218,8 +218,7 @@ const ReviewPage = () => {
           </Box>
         )}
   
-        {/* Button für neue Reviews */}
-        {/* Button für neue Reviews */}
+      
 <Box
   sx={{
     mb: 4,
@@ -229,28 +228,35 @@ const ReviewPage = () => {
     gap: 2,
   }}
 >
-  <Typography
-    variant="body2"
-    color="text.secondary"
-    sx={{ flexShrink: 0 }} // Verhindert, dass der Text skaliert
-  >
-    {!userId
-      ? "Bitte melde dich an, um eine Review hinzuzufügen."
-      : userHasReview
-      ? "Du hast bereits eine Review hinzugefügt."
-      : game?.watchlistStatus?.trim() === "Will spielen"
-      ? "Das Spiel hat den Status 'Will spielen'. Ändere den Status, um eine Review hinzuzufügen."
-      : ""}
-  </Typography>
-  <Button
-    variant="contained"
-    color="primary"
-    startIcon={<AddIcon />}
-    onClick={() => handleOpenDialog()}
-    disabled={!userId || userHasReview || game?.watchlistStatus === "will spielen"}
-  >
-    Review hinzufügen
-  </Button>
+<Typography
+  variant="body2"
+  color="text.secondary"
+  sx={{ flexShrink: 0 }}
+>
+  {!userId
+    ? "Bitte melde dich an, um eine Review hinzuzufügen."
+    : userHasReview
+    ? "Du hast bereits eine Review hinzugefügt."
+    : !game?.watchlistStatus
+    ? "Das Spiel ist nicht in deiner Watchlist. Füge es hinzu, um eine Review zu erstellen."
+    : game?.watchlistStatus?.trim().toLowerCase() === "will spielen"
+    ? "Das Spiel hat den Status 'Will spielen'. Ändere den Status, um eine Review hinzuzufügen."
+    : ""}
+</Typography>
+<Button
+  variant="contained"
+  color="primary"
+  startIcon={<AddIcon />}
+  onClick={() => handleOpenDialog()}
+  disabled={
+    !userId || 
+    userHasReview || 
+    !game?.watchlistStatus || 
+    game?.watchlistStatus?.trim().toLowerCase() === "will spielen"
+  }
+>
+  Review hinzufügen
+</Button>
 </Box>
   
         {/* Überschrift für Reviews */}
