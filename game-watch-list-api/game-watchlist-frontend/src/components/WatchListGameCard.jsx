@@ -166,7 +166,7 @@ const WatchlistGameCard = ({ game, onStatusChange, onRemoveFromWatchlist }) => {
     }}
   />
   <IconButton
-    color="primary"
+    color="secondary"
     onClick={handleSavePlaytime}
     disabled={isSaving || game.status === "will spielen"}
   >
