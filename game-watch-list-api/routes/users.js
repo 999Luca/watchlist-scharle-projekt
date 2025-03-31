@@ -1,6 +1,6 @@
 import express from "express";
 import { DynamoDBClient, ScanCommand, QueryCommand } from "@aws-sdk/client-dynamodb";
-import { PutCommand, DynamoDBDocumentClient } from "@aws-sdk/lib-dynamodb";
+import { PutCommand, DynamoDBDocumentClient, DeleteCommand } from "@aws-sdk/lib-dynamodb";
 import crypto from "crypto";
 import dotenv from "dotenv";
 
@@ -261,6 +261,66 @@ router.post("/create-admin", async (req, res) => {
       });
     } catch (error) {
       console.error("Fehler beim Abrufen des Benutzers:", error);
+      res.status(500).json({ error: "Ein Fehler ist aufgetreten." });
+    }
+  });
+
+  router.delete("/:user_id", async (req, res) => {
+    const { user_id } = req.params;
+  
+    try {
+      console.log(`Starte Löschung für Benutzer mit ID: ${user_id}`);
+  
+      // 1. Lösche alle Reviews des Benutzers
+      try {
+        const reviewsResponse = await fetch(`http://localhost:5000/review/${user_id}`, {
+          method: "DELETE",
+        });
+  
+        if (!reviewsResponse.ok) {
+          const errorText = await reviewsResponse.text(); // Lies die Antwort als Text
+          console.error("Fehler beim Löschen der Reviews:", errorText);
+        } else {
+          console.log("Alle Reviews des Benutzers erfolgreich gelöscht.");
+        }
+      } catch (error) {
+        console.error("Fehler beim Löschen der Reviews:", error.message);
+      }
+  
+      // 2. Lösche alle Watchlist-Einträge des Benutzers
+      try {
+        const watchlistResponse = await fetch(`http://localhost:5000/watchlist/${user_id}`, {
+          method: "DELETE",
+        });
+  
+        if (!watchlistResponse.ok) {
+          const errorText = await watchlistResponse.text(); // Lies die Antwort als Text
+          console.error("Fehler beim Löschen der Watchlist-Einträge:", errorText);
+        } else {
+          console.log("Alle Watchlist-Einträge des Benutzers erfolgreich gelöscht.");
+        }
+      } catch (error) {
+        console.error("Fehler beim Löschen der Watchlist-Einträge:", error.message);
+      }
+  
+      // 3. Lösche den Benutzer selbst
+      try {
+        const deleteUserParams = {
+          TableName: "Users",
+          Key: {
+            user_id: user_id,
+          },
+        };
+        console.log("Lösche Benutzer:", deleteUserParams);
+        await docClient.send(new DeleteCommand(deleteUserParams));
+        console.log(`Benutzer ${user_id} erfolgreich gelöscht.`);
+        res.status(200).json({ message: `Benutzer ${user_id} erfolgreich gelöscht.` });
+      } catch (error) {
+        console.error("Fehler beim Löschen des Benutzers:", error.message);
+        res.status(500).json({ error: "Fehler beim Löschen des Benutzers." });
+      }
+    } catch (error) {
+      console.error("Allgemeiner Fehler beim Löschen des Benutzers:", error.message);
       res.status(500).json({ error: "Ein Fehler ist aufgetreten." });
     }
   });

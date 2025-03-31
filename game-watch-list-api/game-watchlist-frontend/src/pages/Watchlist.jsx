@@ -78,7 +78,6 @@ const Watchlist = () => {
 
   const handleAddReview = (game) => {
     alert(`Review für ${game.title} hinzufügen`);
-    // Hier kannst du eine Modal- oder Formular-Komponente öffnen, um die Review hinzuzufügen.
   };
 
   if (loading) {

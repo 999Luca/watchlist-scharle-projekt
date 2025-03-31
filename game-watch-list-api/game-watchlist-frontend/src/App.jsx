@@ -1,5 +1,6 @@
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import { ThemeProvider } from "@mui/material/styles";
+import { AuthProvider } from "./context/AuthContext"; // Importiere den AuthProvider
 import theme from "./theme";
 import Home from "./pages/Home";
 import Register from "./pages/RegisterPage";
@@ -14,26 +15,28 @@ function App() {
   return (
     <ThemeProvider theme={theme}>
       <Router>
-        <div
-          style={{
-            display: "flex",
-            flexDirection: "column",
-            minHeight: "100vh", // Stellt sicher, dass der Container die gesamte Höhe des Bildschirms einnimmt
-          }}
-        >
-          <Navbar />
-          <div style={{ flex: 1 }}> {/* Flexibler Bereich für den Hauptinhalt */}
-            <Routes>
-              <Route path="/" element={<Home />} />
-              <Route path="/register" element={<Register />} />
-              <Route path="/login" element={<Login />} />
-              <Route path="/watchlist" element={<Watchlist />} />
-              <Route path="/review/:gameId" element={<ReviewPage />} />
-              <Route path="/admin/reviews" element={<AdminReviewsPage />} />
-            </Routes>
+        <AuthProvider> {/* AuthProvider innerhalb des Router-Kontexts */}
+          <div
+            style={{
+              display: "flex",
+              flexDirection: "column",
+              minHeight: "100vh", // Stellt sicher, dass der Container die gesamte Höhe des Bildschirms einnimmt
+            }}
+          >
+            <Navbar />
+            <div style={{ flex: 1 }}> {/* Flexibler Bereich für den Hauptinhalt */}
+              <Routes>
+                <Route path="/" element={<Home />} />
+                <Route path="/register" element={<Register />} />
+                <Route path="/login" element={<Login />} />
+                <Route path="/watchlist" element={<Watchlist />} />
+                <Route path="/review/:gameId" element={<ReviewPage />} />
+                <Route path="/admin/reviews" element={<AdminReviewsPage />} />
+              </Routes>
+            </div>
+            <Footer />
           </div>
-          <Footer />
-        </div>
+        </AuthProvider>
       </Router>
     </ThemeProvider>
   );

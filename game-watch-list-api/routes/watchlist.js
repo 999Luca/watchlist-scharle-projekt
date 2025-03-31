@@ -224,4 +224,37 @@ router.patch("/:user_id/update/:game_id", async (req, res) => {
   }
 });
 
+
+router.delete("/:user_id", async (req, res) => {
+  const { user_id } = req.params;
+
+  try {
+    const params = {
+      TableName: "Watchlist",
+      KeyConditionExpression: "user_id = :user_id",
+      ExpressionAttributeValues: {
+        ":user_id": user_id,
+      },
+    };
+
+    const watchlist = await docClient.send(new QueryCommand(params));
+
+    for (const item of watchlist.Items) {
+      const deleteParams = {
+        TableName: "Watchlist",
+        Key: {
+          user_id: item.user_id,
+          game_id: item.game_id,
+        },
+      };
+      await docClient.send(new DeleteCommand(deleteParams));
+    }
+
+    res.status(200).json({ message: "Alle Watchlist-Einträge erfolgreich gelöscht." });
+  } catch (error) {
+    console.error("Fehler beim Löschen der Watchlist-Einträge:", error.message);
+    res.status(500).json({ error: "Fehler beim Löschen der Watchlist-Einträge." });
+  }
+});
+
 export default router;

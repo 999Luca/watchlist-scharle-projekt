@@ -260,4 +260,54 @@ router.delete("/:user_id/review/:game_id", async (req, res) => {
   }
 });
 
+router.delete("/:user_id", async (req, res) => {
+  const { user_id } = req.params;
+
+  try {
+    // Abfrage mit einem sekundären Index, der nur `user_id` als Partition Key verwendet
+    const params = {
+      TableName: "Reviews",
+      IndexName: "user_id-index", // Stelle sicher, dass dieser Index existiert
+      KeyConditionExpression: "user_id = :user_id",
+      ExpressionAttributeValues: {
+        ":user_id": user_id,
+      },
+    };
+
+    const reviews = await docClient.send(new QueryCommand(params));
+
+    if (!reviews.Items || reviews.Items.length === 0) {
+      return res.status(404).json({ message: "Keine Reviews für diesen Benutzer gefunden." });
+    }
+
+    // Speichere die betroffenen Spiele
+    const affectedGames = new Set();
+
+    // Lösche alle Reviews des Benutzers
+    for (const review of reviews.Items) {
+      const deleteParams = {
+        TableName: "Reviews",
+        Key: {
+          user_id: review.user_id,
+          game_id: review.game_id,
+        },
+      };
+      await docClient.send(new DeleteCommand(deleteParams));
+
+      // Füge die `game_id` zur Liste der betroffenen Spiele hinzu
+      affectedGames.add(review.game_id);
+    }
+
+    // Aktualisiere die Spieldaten für alle betroffenen Spiele
+    for (const game_id of affectedGames) {
+      await updateGameStats(game_id);
+    }
+
+    res.status(200).json({ message: "Alle Reviews erfolgreich gelöscht und Spieldaten aktualisiert." });
+  } catch (error) {
+    console.error("Fehler beim Löschen der Reviews:", error.message);
+    res.status(500).json({ error: "Fehler beim Löschen der Reviews." });
+  }
+});
+
 export default router;

@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 
 const AuthContext = createContext();
 
@@ -7,7 +8,7 @@ export const AuthProvider = ({ children }) => {
   const [isAdmin, setIsAdmin] = useState(false);
   const [userId, setUserId] = useState(null);
   const [username, setUsername] = useState(null);
-
+  const navigate = useNavigate();
   // Beim Login die Daten speichern
   const login = (userId, isAdmin, username) => {
     setIsLoggedIn(true);
@@ -34,6 +35,8 @@ export const AuthProvider = ({ children }) => {
     localStorage.removeItem("isAdmin");
     localStorage.removeItem("userId");
     localStorage.removeItem("username");
+
+    navigate("/");
   };
 
   // Beim Laden der Seite die Daten aus dem localStorage wiederherstellen
@@ -42,17 +45,40 @@ export const AuthProvider = ({ children }) => {
     const storedIsAdmin = localStorage.getItem("isAdmin") === "true";
     const storedUserId = localStorage.getItem("userId");
     const storedUsername = localStorage.getItem("username");
-
-    if (storedIsLoggedIn) {
+  
+    if (storedIsLoggedIn && storedUserId) {
       setIsLoggedIn(true);
       setIsAdmin(storedIsAdmin);
-      setUserId(storedUserId);
+      setUserId(storedUserId); // Stelle sicher, dass userId gesetzt wird
       setUsername(storedUsername);
     }
   }, []);
 
+  const deleteAccount = async () => {
+    if (!window.confirm("Möchtest du deinen Account wirklich löschen? Alle Daten werden entfernt!")) return;
+  
+    try {
+      console.log(`Sende Anfrage zum Löschen des Accounts mit userId: ${userId}`);
+      const response = await fetch(`http://localhost:5000/users/${userId}`, {
+        method: "DELETE",
+      });
+  
+      if (response.ok) {
+        alert("Dein Account wurde erfolgreich gelöscht.");
+        logout(); // Logge den Benutzer aus
+      } else {
+        const data = await response.json();
+        console.error("Fehler beim Löschen des Accounts:", data.error);
+        alert(`Fehler: ${data.error || "Unbekannter Fehler"}`);
+      }
+    } catch (error) {
+      console.error("Fehler beim Löschen des Accounts:", error);
+      alert("Ein Fehler ist aufgetreten.");
+    }
+  };
+  
   return (
-    <AuthContext.Provider value={{ isLoggedIn, isAdmin, userId, username, login, logout }}>
+    <AuthContext.Provider value={{ isLoggedIn, isAdmin, userId, username,deleteAccount, login, logout }}>
       {children}
     </AuthContext.Provider>
   );
