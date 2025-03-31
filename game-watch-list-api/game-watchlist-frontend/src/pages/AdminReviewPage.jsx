@@ -230,11 +230,11 @@ const AdminReviewPage = () => {
       </Typography>
                   <Box sx={{ display: "flex", justifyContent: "space-between", mt: 2 }}>
                     <IconButton
-                      color="secondary"
+                      color="error"
                       onClick={() => handleDeleteReview(review.user_id, game.game_id)}
                       sx={{
                         "&:hover": {
-                          backgroundColor: "#e3f2fd",
+                          backgroundColor: "#FF6666",
                         },
                       }}
                     >
